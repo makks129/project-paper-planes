@@ -5,3 +5,6 @@ services:
 
   app:
     image: makks129/project-paper-planes-app:0.1.0
+
+  db:
+    image: mysql:8.0

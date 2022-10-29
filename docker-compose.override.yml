@@ -8,4 +8,21 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080"
+      - "9000:9000"
+
+  db:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: dev123
+    volumes:
+      - ppp-db:/var/lib/mysql
+
+  # Web-based DB UI
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
+
+volumes:
+  ppp-db:
