@@ -1,0 +1,7 @@
+# Base compose file
+version: "3.9"
+
+services:
+
+  app:
+    image: makks129/project-paper-planes-app:0.1.0

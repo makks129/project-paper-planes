@@ -1,0 +1,11 @@
+# This compose file will be automatically used by `docker compose up` (for dev)
+version: "3.9"
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
