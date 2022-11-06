@@ -11,14 +11,19 @@ services:
       - 9000:9000
     volumes:
       - ./:/usr/src/app # volume used by Air for Gin live-reload
+    depends_on:
+      - mysql
 
-  db:
+  mysql:
     ports:
       - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: dev123
+      MYSQL_USER: ppp.user
+      MYSQL_PASSWORD: ppp123
+      MYSQL_DATABASE: ppp
     volumes:
-      - mysql-db:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
 
   # Web-based DB UI
   adminer:
@@ -27,4 +32,4 @@ services:
       - 8080:8080
 
 volumes:
-  mysql-db:
+  mysql-data:
