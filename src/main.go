@@ -8,6 +8,8 @@ import (
 	"gorm.io/driver/mysql"
 
 	"gorm.io/gorm"
+
+	"github.com/makks129/project-paper-planes/src/lib"
 )
 
 var db *gorm.DB
@@ -36,6 +38,8 @@ func main() {
 	setupDb()
 
 	r := setupRouter()
+
+	lib.Foo()
 
 	r.Run(":9000")
 }
