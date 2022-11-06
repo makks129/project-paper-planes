@@ -3,20 +3,22 @@ version: "3.9"
 
 services:
 
+  # Running app with air for live-reload
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    image: cosmtrek/air
+    working_dir: /usr/src/app
     ports:
-      - "9000:9000"
+      - 9000:9000
+    volumes:
+      - ./:/usr/src/app
 
   db:
     ports:
-      - "3306:3306"
+      - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: dev123
     volumes:
-      - ppp-db:/var/lib/mysql
+      - mysql-db:/var/lib/mysql
 
   # Web-based DB UI
   adminer:
@@ -25,4 +27,4 @@ services:
       - 8080:8080
 
 volumes:
-  ppp-db:
+  mysql-db:
