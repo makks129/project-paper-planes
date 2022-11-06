@@ -3,14 +3,14 @@ version: "3.9"
 
 services:
 
-  # Running app with air for live-reload
   app:
-    image: cosmtrek/air
-    working_dir: /usr/src/app
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - 9000:9000
     volumes:
-      - ./:/usr/src/app
+      - ./:/usr/src/app # volume used by Air for Gin live-reload
 
   db:
     ports:
