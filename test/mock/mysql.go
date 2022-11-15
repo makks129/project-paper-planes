@@ -7,8 +7,16 @@ import (
 	"time"
 )
 
+const IMAGE = "mysql:8.0"
+const MYSQL_CONTAINER_NAME = "go-test-mysql-mock"
+const MYSQL_USER = "root"
+const MYSQL_PASSWORD = "root"
+const DB_NAME = "ppp"
+
 func StartMysqlContainer() {
-	res, error := execCmd("docker run --rm --name go-test-mysql-mock -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=default -d -P mysql:8.0 --sql-mode=NO_ENGINE_SUBSTITUTION")
+	cmd := fmt.Sprintf("docker run --rm --name %s -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_DATABASE=default -d -P %s --sql-mode=NO_ENGINE_SUBSTITUTION",
+		MYSQL_CONTAINER_NAME, MYSQL_PASSWORD, IMAGE)
+	res, error := execCmd(cmd)
 	if error != nil {
 		fmt.Println("Failed to start MySQL mock container", string(res))
 		panic(error)
@@ -20,7 +28,8 @@ func WaitForDB() {
 	startTime := time.Now()
 	fmt.Println("⏳ Waiting for MySQL to get ready...")
 	for {
-		res, error := execCmd("docker exec go-test-mysql-mock env MYSQL_PWD=root mysqladmin ping")
+		cmd := fmt.Sprintf("docker exec %s env MYSQL_PWD=%s mysqladmin ping", MYSQL_CONTAINER_NAME, MYSQL_PASSWORD)
+		res, error := execCmd(cmd)
 		if error != nil || !strings.Contains(res, "mysqld is alive") {
 			if time.Since(startTime) > 20*time.Second {
 				fmt.Println("Failed to wait for MySQL to get ready", string(res))
@@ -35,7 +44,7 @@ func WaitForDB() {
 }
 
 func CreateDB() {
-	command := exec.Command("docker", "exec", "go-test-mysql-mock", "env", "MYSQL_PWD=root", "mysql", "-u", "root", "-e", "CREATE DATABASE IF NOT EXISTS ppp;")
+	command := exec.Command("docker", "exec", MYSQL_CONTAINER_NAME, "env", fmt.Sprintf("MYSQL_PWD=%s", MYSQL_PASSWORD), "mysql", "-u", "root", "-e", fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", DB_NAME))
 	res, error := command.CombinedOutput()
 	if error != nil {
 		fmt.Println("Failed to create DB", string(res))
@@ -45,7 +54,7 @@ func CreateDB() {
 }
 
 func DropDB() {
-	command := exec.Command("docker", "exec", "go-test-mysql-mock", "env", "MYSQL_PWD=root", "mysql", "-u", "root", "-e", "DROP DATABASE IF EXISTS ppp;")
+	command := exec.Command("docker", "exec", MYSQL_CONTAINER_NAME, "env", fmt.Sprintf("MYSQL_PWD=%s", MYSQL_PASSWORD), "mysql", "-u", "root", "-e", fmt.Sprintf("DROP DATABASE IF EXISTS %s;", DB_NAME))
 	res, error := command.CombinedOutput()
 	if error != nil {
 		fmt.Println("Failed to drop DB", string(res))
@@ -55,7 +64,8 @@ func DropDB() {
 }
 
 func StopMysqlContainer() {
-	res, error := execCmd("docker rm -f go-test-mysql-mock")
+	cmd := fmt.Sprintf("docker rm -f %s", MYSQL_CONTAINER_NAME)
+	res, error := execCmd(cmd)
 	if error != nil {
 		fmt.Println("Failed to stop MySQL mock container", string(res))
 		panic(error)
