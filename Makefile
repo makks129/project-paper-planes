@@ -4,17 +4,29 @@
 update:
 	go get -u all && go mod vendor
 
+.PHONY: test-setup
+test-setup:
+	@go run ./test/functional/main.go -phase=setup
+
+.PHONY: test-teardown
+test-teardown:
+	@go run ./test/functional/main.go -phase=teardown
+
+.PHONY: just-tests
+test-only:
+	@GO_ENV=test go test -run Test -v ./test/... -p 1
+
 .PHONY: test
 test:
-	@go run ./test/functional/main.go -phase=setup
-	@GO_ENV=test go test -run Test -v ./test/... -p 1
-	@go run ./test/functional/main.go -phase=teardown
+	@make test-setup
+	@make test-only
+	@make test-teardown
 
 .PHONY: coverage
 coverage:
-	@go run ./test/functional/main.go -phase=setup
+	@make test-setup
 	@GO_ENV=test go test -run Test -v ./test/... -p 1 -coverprofile=coverage.out
-	@go run ./test/functional/main.go -phase=teardown
+	@make test-teardown
 
 .PHONY: lint
 lint:

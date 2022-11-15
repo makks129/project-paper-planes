@@ -16,6 +16,11 @@ const MYSQL_PASSWORD = "root"
 const DB_NAME = "ppp"
 
 func StartMysqlContainer() {
+	if isContainerAlreadyRunning() {
+		utils.Log("MySQL mock container already running")
+		return
+	}
+
 	utils.Log("Starting MySQL mock container...")
 	cmd := fmt.Sprintf("docker run --rm --name %s -p 3306:3306 -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_DATABASE=default -d -P %s --sql-mode=NO_ENGINE_SUBSTITUTION",
 		MYSQL_CONTAINER_NAME, MYSQL_PASSWORD, IMAGE)
@@ -25,6 +30,12 @@ func StartMysqlContainer() {
 		panic(error)
 	}
 	utils.Log("Started MySQL mock container: ", string(res))
+}
+
+func isContainerAlreadyRunning() bool {
+	command := exec.Command("docker", "inspect", "--format", "'{{json .State.Running}}'", MYSQL_CONTAINER_NAME)
+	res, error := command.CombinedOutput()
+	return error == nil && strings.Contains(string(res), "true")
 }
 
 func WaitForDB() {
