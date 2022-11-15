@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/makks129/project-paper-planes/src/err"
+	"github.com/makks129/project-paper-planes/src/model"
 	repo "github.com/makks129/project-paper-planes/src/repository"
-	"github.com/makks129/project-paper-planes/src/repository/db/model"
 	"gorm.io/gorm"
 )
 

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/controller"
+	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
-	"github.com/makks129/project-paper-planes/src/repository/db"
 	"gorm.io/gorm"
 )
 

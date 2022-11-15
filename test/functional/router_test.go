@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/makks129/project-paper-planes/src/repository/db"
+	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/router"
 	"github.com/stretchr/testify/assert"
 )

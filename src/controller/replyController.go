@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/makks129/project-paper-planes/src/err"
-	"github.com/makks129/project-paper-planes/src/repository/db/model"
+	"github.com/makks129/project-paper-planes/src/model"
 	"gorm.io/gorm"
 )
 
