@@ -28,7 +28,7 @@ func StartMysqlContainer() {
 }
 
 func WaitForDB() {
-	utils.Log("Waiting for MySQL server to get ready...")
+	utils.Logt("Waiting for MySQL server to get ready")
 	startTime := time.Now()
 	for {
 		cmd := fmt.Sprintf("docker exec %s env MYSQL_PWD=%s mysqladmin ping", MYSQL_CONTAINER_NAME, MYSQL_PASSWORD)
@@ -38,8 +38,10 @@ func WaitForDB() {
 				utils.Log("Failed to wait for MySQL server to get ready", string(res))
 				panic(error)
 			}
+			utils.Logm(".")
 			time.Sleep(1 * time.Second)
 		} else {
+			utils.Logm("\n")
 			utils.Log("MySQL server is ready")
 			return
 		}
@@ -53,7 +55,7 @@ func CreateDB() {
 		utils.Log("Failed to create DB", string(res))
 		panic(error)
 	}
-	utils.Log("Created DB ", DB_NAME)
+	utils.Log("Created DB", DB_NAME)
 }
 
 func DropDB() {
@@ -63,7 +65,7 @@ func DropDB() {
 		utils.Log("Failed to drop DB", string(res))
 		panic(error)
 	}
-	utils.Log("Dropped DB ", DB_NAME)
+	utils.Log("Dropped DB", DB_NAME)
 }
 
 func StopMysqlContainer() {
