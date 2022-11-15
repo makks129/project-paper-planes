@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/makks129/project-paper-planes/src/err"
-	"github.com/makks129/project-paper-planes/src/repository/db"
 	"github.com/makks129/project-paper-planes/src/repository/db/model"
+	"gorm.io/gorm"
 )
 
-func GetAssignedUnreadMessage(userId string) (*model.Message, error) {
+func GetAssignedUnreadMessage(userId string, tx *gorm.DB) (*model.Message, error) {
 	var message *model.Message
-	res := db.Db.Table("messages").Where("assigned_to_user_id = ? AND is_read = ?", userId, false).Take(&message)
+	res := tx.Table("messages").Where("assigned_to_user_id = ? AND is_read = ?", userId, false).Take(&message)
 
 	log.Println("GetAssignedUnreadMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
@@ -25,9 +25,9 @@ func GetAssignedUnreadMessage(userId string) (*model.Message, error) {
 	}
 }
 
-func GetLatestUnassignedMessage() (*model.Message, error) {
+func GetLatestUnassignedMessage(tx *gorm.DB) (*model.Message, error) {
 	var message *model.Message
-	res := db.Db.Table("messages").Where("assigned_to_user_id IS NULL").Order("created_at DESC").Take(&message)
+	res := tx.Table("messages").Where("assigned_to_user_id IS NULL").Order("created_at DESC").Take(&message)
 
 	log.Println("GetLatestUnassignedMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
@@ -41,9 +41,9 @@ func GetLatestUnassignedMessage() (*model.Message, error) {
 	}
 }
 
-func AssignMessage(userId string, messageId uint) error {
+func AssignMessage(userId string, messageId uint, tx *gorm.DB) error {
 	updates := model.Message{AssignedToUserId: userId, AssignedAt: time.Now()}
-	res := db.Db.Table("messages").Where("id = ?", messageId).Updates(updates)
+	res := tx.Table("messages").Where("id = ?", messageId).Updates(updates)
 
 	log.Println("AssignMessage", "\n| ERROR: ", res.Error, "\n ")
 

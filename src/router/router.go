@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/controller"
 	"github.com/makks129/project-paper-planes/src/err"
-	repo "github.com/makks129/project-paper-planes/src/repository"
-	"github.com/makks129/project-paper-planes/src/utils"
+	"github.com/makks129/project-paper-planes/src/repository/db"
+	"gorm.io/gorm"
 )
 
 func SetupRouter(app *gin.Engine) {
@@ -22,32 +22,47 @@ func SetupRouter(app *gin.Engine) {
 
 // TODO delete
 func test(c *gin.Context) {
-	repo.GetLatestUnassignedMessage()
-
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 func getStart(c *gin.Context) {
-	userId := utils.GetCookie("user_id", c.Request)
-
-	reply, _ := controller.GetReply(userId)
-
-	if reply != nil {
-		c.JSON(http.StatusOK, gin.H{"reply": reply})
+	userIdCookie, cookieError := c.Request.Cookie("user_id")
+	if cookieError != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
 
-	message, error := controller.GetMessageOnStart(userId)
+	userId := userIdCookie.Value
 
-	if message != nil {
-		c.JSON(http.StatusOK, gin.H{"message": message})
-		return
-	} else if errors.As(error, &err.NothingAvailableError{}) {
-		c.JSON(http.StatusNoContent, gin.H{})
-		return
+	error := db.Db.Transaction(func(tx *gorm.DB) error {
+
+		reply, err1 := controller.GetReply(userId, tx)
+		switch {
+		case reply != nil:
+			c.JSON(http.StatusOK, gin.H{"reply": reply})
+			return nil
+		case errors.As(err1, &err.NothingAvailableError{}):
+			break
+		default:
+			return err1
+		}
+
+		message, err2 := controller.GetMessageOnStart(userId, tx)
+		switch {
+		case message != nil:
+			c.JSON(http.StatusOK, gin.H{"message": message})
+			return nil
+		case errors.As(err2, &err.NothingAvailableError{}):
+			c.JSON(http.StatusNoContent, gin.H{})
+			return nil
+		default:
+			return err2
+		}
+	})
+
+	if error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 	}
-
-	c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 }
 
 func sendMessage(c *gin.Context) {

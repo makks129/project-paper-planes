@@ -6,10 +6,11 @@ import (
 	"github.com/makks129/project-paper-planes/src/err"
 	repo "github.com/makks129/project-paper-planes/src/repository"
 	"github.com/makks129/project-paper-planes/src/repository/db/model"
+	"gorm.io/gorm"
 )
 
-func GetMessageOnStart(userId string) (*model.Message, error) {
-	assignedMessage, err1 := repo.GetAssignedUnreadMessage(userId)
+func GetMessageOnStart(userId string, tx *gorm.DB) (*model.Message, error) {
+	assignedMessage, err1 := repo.GetAssignedUnreadMessage(userId, tx)
 
 	if assignedMessage != nil {
 		return assignedMessage, nil
@@ -17,11 +18,11 @@ func GetMessageOnStart(userId string) (*model.Message, error) {
 		return nil, err1
 	}
 
-	latestMessage, err2 := repo.GetLatestUnassignedMessage()
+	latestMessage, err2 := repo.GetLatestUnassignedMessage(tx)
 
 	if latestMessage != nil {
 
-		err3 := repo.AssignMessage(userId, latestMessage.ID)
+		err3 := repo.AssignMessage(userId, latestMessage.ID, tx)
 		if err3 != nil {
 			return nil, err3
 		}

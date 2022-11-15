@@ -22,6 +22,7 @@ test:
 	@make test-only
 	@make test-teardown
 
+# TODO fix coverage (go tool cover -func=coverage.out)
 .PHONY: coverage
 coverage:
 	@make test-setup
