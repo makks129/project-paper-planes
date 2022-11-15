@@ -6,19 +6,22 @@ import (
 	"github.com/makks129/project-paper-planes/test/mock"
 )
 
-// go test -run Test -v ./test
+// go test -run Test -v ./test/...
 
 func TestMain(m *testing.M) {
-	defer setupAndTeardown()()
+	defer teardown()
+	setup()
+
 	m.Run()
 }
 
-func setupAndTeardown() func() {
-	// Setup
+func setup() {
 	mock.StartMysqlContainer()
+	mock.WaitForDB()
+	mock.CreateDB()
+}
 
-	// Teardown
-	return func() {
-		mock.StopMysqlContainer()
-	}
+func teardown() {
+	mock.DropDB()
+	mock.StopMysqlContainer()
 }
