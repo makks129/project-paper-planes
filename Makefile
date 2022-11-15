@@ -6,13 +6,15 @@ update:
 
 .PHONY: test
 test:
-	@echo "Running tests...\n"
+	@go run ./test/functional/main.go -phase=setup
 	@GO_ENV=test go test -run Test -v ./test/... -p 1
+	@go run ./test/functional/main.go -phase=teardown
 
 .PHONY: coverage
 coverage:
-	@echo "Running test coverage..."
+	@go run ./test/functional/main.go -phase=setup
 	@GO_ENV=test go test -run Test -v ./test/... -p 1 -coverprofile=coverage.out
+	@go run ./test/functional/main.go -phase=teardown
 
 .PHONY: lint
 lint:

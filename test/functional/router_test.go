@@ -1,4 +1,4 @@
-package functional
+package main
 
 import (
 	"net/http"
@@ -8,12 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/repository/db"
 	"github.com/makks129/project-paper-planes/src/router"
-	"github.com/makks129/project-paper-planes/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetStart(t *testing.T) {
-	utils.Log("TestGetStart ---")
 
 	app := gin.Default()
 	router.SetupRouter(app)

@@ -47,25 +47,23 @@ func WaitForDB() {
 }
 
 func CreateDB() {
-	utils.Log("Creating DB...")
 	command := exec.Command("docker", "exec", MYSQL_CONTAINER_NAME, "env", fmt.Sprintf("MYSQL_PWD=%s", MYSQL_PASSWORD), "mysql", "-u", "root", "-e", fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", DB_NAME))
 	res, error := command.CombinedOutput()
 	if error != nil {
 		utils.Log("Failed to create DB", string(res))
 		panic(error)
 	}
-	utils.Log("Created DB ppp")
+	utils.Log("Created DB ", DB_NAME)
 }
 
 func DropDB() {
-	utils.Log("Dropping DB...")
 	command := exec.Command("docker", "exec", MYSQL_CONTAINER_NAME, "env", fmt.Sprintf("MYSQL_PWD=%s", MYSQL_PASSWORD), "mysql", "-u", "root", "-e", fmt.Sprintf("DROP DATABASE IF EXISTS %s;", DB_NAME))
 	res, error := command.CombinedOutput()
 	if error != nil {
 		utils.Log("Failed to drop DB", string(res))
 		panic(error)
 	}
-	utils.Log("Dropped DB ppp")
+	utils.Log("Dropped DB ", DB_NAME)
 }
 
 func StopMysqlContainer() {
