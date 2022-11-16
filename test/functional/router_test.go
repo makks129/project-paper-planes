@@ -19,6 +19,7 @@ import (
 const MOCK_USER_ID = "mock_user_id"
 
 func TestGetStart(t *testing.T) {
+
 	gin.SetMode(gin.TestMode)
 	app := gin.New()
 	app.Use(gin.Recovery())
@@ -27,15 +28,15 @@ func TestGetStart(t *testing.T) {
 	db.InitDb()
 	db.RunDbMigrations()
 
-	s := suit.Of(&suit.SubTests{T: t,
-		BeforeEach: func(t *testing.T) {
-			db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Message{})
-			db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Reply{})
-		},
-		AfterAll: func() {
-			db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Message{})
-			db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Reply{})
-		},
+	cleanupDb := func() {
+		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Message{})
+		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Reply{})
+	}
+
+	s := suit.Of(&suit.SubTests{
+		T:          t,
+		BeforeEach: cleanupDb,
+		AfterAll:   cleanupDb,
 	})
 
 	// Cookie
@@ -94,13 +95,13 @@ func TestGetStart(t *testing.T) {
 	})
 
 	s.TestIt("returns no replies, if replies exist but are already read", func(t *testing.T) {
-		// db.Db.Create(&model.Message{
-		// 	UserId:           MOCK_USER_ID,
-		// 	Text:             "Lorem ipsum",
-		// 	AssignedToUserId: "some_other_user_id",
-		// 	AssignedAt:       time.Now(),
-		// 	IsRead:           false,
-		// })
+		db.Db.Create(&model.Message{
+			UserId:           MOCK_USER_ID,
+			Text:             "Lorem ipsum",
+			AssignedToUserId: "some_other_user_id",
+			AssignedAt:       time.Now(),
+			IsRead:           false,
+		})
 	})
 
 	// s.TestIt("returns all available replies, if unread replies exist", func(t *testing.T) {

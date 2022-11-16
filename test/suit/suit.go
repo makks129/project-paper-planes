@@ -11,17 +11,17 @@ func Of(subTests *SubTests) *SubTests {
 
 type SubTests struct {
 	T          *testing.T
-	BeforeEach func(t *testing.T)
-	AfterEach  func(t *testing.T)
+	BeforeEach func()
+	AfterEach  func()
 	AfterAll   func()
 }
 
 func (s *SubTests) TestIt(name string, f func(t *testing.T)) {
 	if s.AfterEach != nil {
-		defer s.AfterEach(s.T)
+		defer s.AfterEach()
 	}
 	if s.BeforeEach != nil {
-		s.BeforeEach(s.T)
+		s.BeforeEach()
 	}
 	s.T.Run(name, f)
 }
