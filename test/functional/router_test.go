@@ -16,7 +16,8 @@ import (
 	"gorm.io/gorm"
 )
 
-const MOCK_USER_ID = "mock_user_id"
+const ALICE_ID = "mock_alice_id"
+const BOB_ID = "mock_bob_id"
 
 func TestGetStart(t *testing.T) {
 
@@ -36,21 +37,12 @@ func TestGetStart(t *testing.T) {
 	s := suit.Of(&suit.SubTests{
 		T:          t,
 		BeforeEach: cleanupDb,
-		AfterAll:   cleanupDb,
+		// AfterAll:   cleanupDb,
 	})
 
 	// Cookie
 
-	s.TestIt("returns 400, if no user_id cookie", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/start", nil)
-		// no cookie
-		app.ServeHTTP(w, req)
-
-		assert.Equal(t, 400, w.Code)
-	})
-
-	s.TestIt("returns 400, if no user_id cookie", func(t *testing.T) {
+	s.Skip("returns 400, if no user_id cookie", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/start", nil)
 		// no cookie
@@ -61,7 +53,7 @@ func TestGetStart(t *testing.T) {
 
 	// No content
 
-	s.TestIt("returns 204, if no replies or messages exist", func(t *testing.T) {
+	s.Skip("returns 204, if no replies or messages exist", func(t *testing.T) {
 		w := sendStartRequest(app)
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
@@ -69,17 +61,17 @@ func TestGetStart(t *testing.T) {
 
 	// Replies
 
-	s.TestIt("returns no replies, if no messages exist", func(t *testing.T) {
+	s.Skip("returns no replies, if no messages exist", func(t *testing.T) {
 		w := sendStartRequest(app)
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
 	})
 
-	s.TestIt("returns no replies, if replies do not exist", func(t *testing.T) {
+	s.Skip("returns no replies, if replies do not exist", func(t *testing.T) {
 		db.Db.Create(&model.Message{
-			UserId:           "some_other_user_id",
+			UserId:           BOB_ID,
 			Text:             "Lorem ipsum",
-			AssignedToUserId: MOCK_USER_ID,
+			AssignedToUserId: ALICE_ID,
 			AssignedAt:       time.Now(),
 			IsRead:           false,
 		})
@@ -94,39 +86,50 @@ func TestGetStart(t *testing.T) {
 		assert.NotNil(t, msgBody.Message)
 	})
 
-	s.TestIt("returns no replies, if replies exist but are already read", func(t *testing.T) {
+	s.Test("returns no replies, if replies exist but are already read", func(t *testing.T) {
+		msg := model.Message{}
 		db.Db.Create(&model.Message{
-			UserId:           MOCK_USER_ID,
+			UserId:           ALICE_ID,
 			Text:             "Lorem ipsum",
-			AssignedToUserId: "some_other_user_id",
+			AssignedToUserId: BOB_ID,
 			AssignedAt:       time.Now(),
 			IsRead:           false,
-		})
+		}).First(&msg)
+
+		reply := model.Reply{}
+		db.Db.Create(&model.Reply{
+			UserId:    BOB_ID,
+			MessageId: msg.ID,
+			Text:      "Reply to Lorem ipsum",
+			IsRead:    false,
+		}).First(&reply)
+
+		// TODO
 	})
 
-	// s.TestIt("returns all available replies, if unread replies exist", func(t *testing.T) {
+	// s.Test("returns all available replies, if unread replies exist", func(t *testing.T) {
 	// 	// TODO
 	// 	assert.Equal(t, 1, 1)
 	// })
 
 	// // Messages
 
-	// s.TestIt("returns message, if assigned message exists", func(t *testing.T) {
+	// s.Test("returns message, if assigned message exists", func(t *testing.T) {
 	// 	// TODO
 	// 	assert.Equal(t, 1, 1)
 	// })
 
-	// s.TestIt("doesn't return message, if assigned message exists but it's already read", func(t *testing.T) {
+	// s.Test("doesn't return message, if assigned message exists but it's already read", func(t *testing.T) {
 	// 	// TODO
 	// 	assert.Equal(t, 1, 1)
 	// })
 
-	// s.TestIt("returns message, if assigned-unread message doesn't exist and unassigned one exists", func(t *testing.T) {
+	// s.Test("returns message, if assigned-unread message doesn't exist and unassigned one exists", func(t *testing.T) {
 	// 	// TODO
 	// 	assert.Equal(t, 1, 1)
 	// })
 
-	// s.TestIt("doesn't return message, if neither assigned-unread or unassigned messages exist", func(t *testing.T) {
+	// s.Test("doesn't return message, if neither assigned-unread or unassigned messages exist", func(t *testing.T) {
 	// 	// TODO
 	// 	assert.Equal(t, 1, 1)
 	// })
@@ -140,7 +143,7 @@ type MessageBody struct {
 func sendStartRequest(app *gin.Engine) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/start", nil)
-	req.AddCookie(&http.Cookie{Name: "user_id", Value: MOCK_USER_ID, Secure: true, HttpOnly: true})
+	req.AddCookie(&http.Cookie{Name: "user_id", Value: ALICE_ID, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
 }

@@ -10,7 +10,7 @@ type Reply struct {
 	ID uint `gorm:"column:id;primarykey;type:bigint unsigned;not null"`
 
 	UserId    string `gorm:"column:user_id;type:varchar(36);not null"`
-	MessageId string `gorm:"column:message_id;type:bigint unsigned;not null"`
+	MessageId uint   `gorm:"column:message_id;type:bigint unsigned;not null"`
 	Text      string `gorm:"column:text;type:text;not null"`
 	IsRead    bool   `gorm:"column:is_read;type:boolean;not null;default:false"`
 
