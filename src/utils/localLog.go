@@ -18,6 +18,10 @@ func Logm(message ...string) {
 	fmt.Print(strings.Join(message, " "))
 }
 
+func Error(error error) {
+	fmt.Print(logTime(), error.Error(), "\n")
+}
+
 func logTime() string {
 	return "" + time.Now().Format("15:04:05.000") + " | "
 }

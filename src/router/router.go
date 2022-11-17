@@ -8,6 +8,7 @@ import (
 	"github.com/makks129/project-paper-planes/src/controller"
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
+	"github.com/makks129/project-paper-planes/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -36,15 +37,19 @@ func getStart(c *gin.Context) {
 
 	error := db.Db.Transaction(func(tx *gorm.DB) error {
 
-		reply, err1 := controller.GetReply(userId, tx)
+		replies, err1 := controller.GetReplies(userId, tx)
+
+		// log.Println("GetStart", "\n| replies: ", replies, "\n| ERROR: ", err1, "\n ")
+
 		switch {
-		case reply != nil:
-			c.JSON(http.StatusOK, gin.H{"reply": reply})
+		case len(replies) > 0:
+			c.JSON(http.StatusOK, gin.H{"replies": replies})
 			return nil
 		case errors.As(err1, &err.NothingAvailableError{}):
 			break
 		default:
-			return err1
+			utils.Error(err1)
+			return err.GenericServerError{}
 		}
 
 		message, err2 := controller.GetMessageOnStart(userId, tx)
@@ -56,7 +61,7 @@ func getStart(c *gin.Context) {
 			c.JSON(http.StatusNoContent, gin.H{})
 			return nil
 		default:
-			return err2
+			return err.GenericServerError{}
 		}
 	})
 
