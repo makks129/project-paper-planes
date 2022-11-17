@@ -15,7 +15,7 @@ import (
 func SetupRouter(app *gin.Engine) {
 	app.GET("/test", test)
 
-	app.GET("/start", getStart)
+	app.POST("/start", postStart)
 	app.POST("/send-message", sendMessage)
 	app.POST("/send-reply", sendReply)
 	app.POST("/ack-message", ackMessage)
@@ -26,7 +26,7 @@ func test(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func getStart(c *gin.Context) {
+func postStart(c *gin.Context) {
 	userIdCookie, cookieError := c.Request.Cookie("user_id")
 	if cookieError != nil {
 		c.JSON(http.StatusBadRequest, gin.H{})

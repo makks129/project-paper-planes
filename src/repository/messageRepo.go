@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/makks129/project-paper-planes/src/err"
@@ -41,7 +42,10 @@ func GetLatestUnassignedMessage(tx *gorm.DB) (*model.Message, error) {
 }
 
 func AssignMessage(userId string, messageId uint, tx *gorm.DB) error {
-	updates := model.Message{AssignedToUserId: userId, AssignedAt: time.Now()}
+	updates := model.Message{
+		AssignedToUserId: sql.NullString{String: userId, Valid: true},
+		AssignedAt:       sql.NullTime{Time: time.Now(), Valid: true},
+	}
 	res := tx.Table("messages").Where("id = ?", messageId).Updates(updates)
 
 	// log.Println("AssignMessage", "\n| ERROR: ", res.Error, "\n ")
