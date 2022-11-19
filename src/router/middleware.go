@@ -19,6 +19,12 @@ func RequireCookie(cookie string) func(c *gin.Context) {
 }
 
 func ValidateBody[T interface{}](c *gin.Context) {
+	if c.Request.Header.Get("Content-Type") != "application/json" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Content-Type must be application/json"})
+		c.Abort()
+		return
+	}
+
 	validationErrors, error := utils.ValidateRequestBody[T](c)
 
 	switch {

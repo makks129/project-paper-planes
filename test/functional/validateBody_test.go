@@ -36,6 +36,16 @@ func Test_ValidateBody(t *testing.T) {
 		assert.Equal(t, 200, w.Code)
 	})
 
+	s.Test("returns 400, if Content-Type is not application/json", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest("GET", "/test", bytes.NewBuffer([]byte("{}")))
+		app.ServeHTTP(w, req)
+
+		assert.Equal(t, 400, w.Code)
+		assert.Equal(t, w.Body.String(), `{"error":"Content-Type must be application/json"}`)
+	})
+
 	s.Test("returns 400 and validation errors, if body is invalid", func(t *testing.T) {
 		w := httptest.NewRecorder()
 

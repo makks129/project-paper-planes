@@ -8,6 +8,7 @@ import (
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/model"
 	"github.com/makks129/project-paper-planes/src/router"
+	"gorm.io/gorm"
 )
 
 const ALICE_ID = "mock_alice_id" // Alice: sends messages
@@ -19,6 +20,13 @@ func InitApp() *gin.Engine {
 	app.Use(gin.Recovery())
 	router.SetupRouter(app)
 	return app
+}
+
+// https://xkcd.com/327/
+func bobbyDropTables(models ...interface{}) {
+	for _, m := range models {
+		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m)
+	}
 }
 
 func CreateMessage(userId string, assignedToUserId *string, isRead bool) model.Message {

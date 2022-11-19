@@ -14,20 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Test_PostStart_Cookie(t *testing.T) {
-	app := InitApp()
-
-	s := suit.Of(&suit.SubTests{T: t})
-
-	s.Test("returns 400, if no user_id cookie", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/start", nil)
-		// no cookie
-		app.ServeHTTP(w, req)
-
-		assert.Equal(t, 400, w.Code)
-	})
-}
+// TODO cover 500 case with test (mock gorm to throw error)
 
 func Test_PostStart_NoContent(t *testing.T) {
 	app := InitApp()
@@ -50,8 +37,7 @@ func Test_PostStart_Replies(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Message{})
-		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Reply{})
+		bobbyDropTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{

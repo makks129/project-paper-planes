@@ -60,7 +60,7 @@ func postStart(c *gin.Context) {
 }
 
 type SendMessageBody struct {
-	Message string `json:"message" validate:"required,min=10,max=11"`
+	Message string `json:"message" validate:"required,min=10,max=10000"`
 }
 
 func sendMessage(c *gin.Context) {
