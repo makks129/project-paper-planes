@@ -20,7 +20,7 @@ func InitDb() {
 
 	switch os.Getenv("GO_ENV") {
 	case "test":
-		dsn = "root:root@tcp(0.0.0.0:3306)/ppp?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:root@tcp(0.0.0.0:3307)/ppp?charset=utf8mb4&parseTime=True&loc=Local"
 		dbLogger = logger.Default.LogMode(logger.Silent)
 	default:
 		dsn = "ppp.user:ppp123@tcp(mysql:3306)/ppp?charset=utf8mb4&parseTime=True&loc=Local"

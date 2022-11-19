@@ -12,27 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRouter(app *gin.Engine) {
-	app.GET("/test", test)
+const COOKIE_USER_ID = "user_id"
 
-	app.POST("/start", postStart)
-	app.POST("/send-message", sendMessage)
+func SetupRouter(app *gin.Engine) {
+	app.POST("/start", RequireCookie(COOKIE_USER_ID), postStart)
+	app.POST("/send-message", RequireCookie(COOKIE_USER_ID), ValidateBody[SendMessageBody], sendMessage)
 	app.POST("/send-reply", sendReply)
 	app.POST("/ack-message", ackMessage)
 }
 
-// TODO delete
-func test(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
 func postStart(c *gin.Context) {
-	userIdCookie, cookieError := c.Request.Cookie("user_id")
-	if cookieError != nil {
-		c.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-
+	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
 	userId := userIdCookie.Value
 
 	error := db.Db.Transaction(func(tx *gorm.DB) error {
@@ -69,20 +59,30 @@ func postStart(c *gin.Context) {
 	}
 }
 
+type SendMessageBody struct {
+	Message string `json:"message" validate:"required,min=10,max=11"`
+}
+
 func sendMessage(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
+	userId := userIdCookie.Value
+
+	var body SendMessageBody
+	c.ShouldBindJSON(&body)
+
+	error := controller.SaveMessage(userId, body.Message)
+	if error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func sendReply(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func ackMessage(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }

@@ -34,3 +34,7 @@ func GetMessageOnStart(userId string, tx *gorm.DB) (*model.Message, error) {
 
 	return nil, err.NothingAvailableError{}
 }
+
+func SaveMessage(userId string, message string) error {
+	return repo.SaveMessage(userId, message)
+}

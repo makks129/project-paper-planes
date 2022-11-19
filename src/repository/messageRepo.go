@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
 	"github.com/makks129/project-paper-planes/src/model"
 	"gorm.io/gorm"
@@ -50,5 +51,13 @@ func AssignMessage(userId string, messageId uint, tx *gorm.DB) error {
 
 	// log.Println("AssignMessage", "\n| ERROR: ", res.Error, "\n ")
 
+	return res.Error
+}
+
+func SaveMessage(userId string, message string) error {
+	res := db.Db.Create(&model.Message{
+		UserId: userId,
+		Text:   message,
+	})
 	return res.Error
 }

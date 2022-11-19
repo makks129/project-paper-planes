@@ -1,35 +1,21 @@
 package main
 
 import (
-	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/model"
-	"github.com/makks129/project-paper-planes/src/router"
 	"github.com/makks129/project-paper-planes/test/suit"
 	"github.com/makks129/project-paper-planes/test/utils"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-const ALICE_ID = "mock_alice_id" // Alice: sends messages
-const BOB_ID = "mock_bob_id"     // Bob: send messages to Alice, or reads and replies to Alice's messages
-
-func initApp() *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	app := gin.New()
-	app.Use(gin.Recovery())
-	router.SetupRouter(app)
-	return app
-}
-
 func Test_PostStart_Cookie(t *testing.T) {
-	app := initApp()
+	app := InitApp()
 
 	s := suit.Of(&suit.SubTests{T: t})
 
@@ -44,7 +30,7 @@ func Test_PostStart_Cookie(t *testing.T) {
 }
 
 func Test_PostStart_NoContent(t *testing.T) {
-	app := initApp()
+	app := InitApp()
 	db.InitDb()
 	db.RunDbMigrations()
 
@@ -59,7 +45,7 @@ func Test_PostStart_NoContent(t *testing.T) {
 }
 
 func Test_PostStart_Replies(t *testing.T) {
-	app := initApp()
+	app := InitApp()
 	db.InitDb()
 	db.RunDbMigrations()
 
@@ -83,7 +69,7 @@ func Test_PostStart_Replies(t *testing.T) {
 
 	s.Test("returns no replies, if replies do not exist", func(t *testing.T) {
 		_ALICE_ID := ALICE_ID
-		createMessage(BOB_ID, &_ALICE_ID, false)
+		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)
@@ -94,7 +80,7 @@ func Test_PostStart_Replies(t *testing.T) {
 
 	s.Test("returns no replies, if replies exist but are already read", func(t *testing.T) {
 		_BOB_ID := BOB_ID
-		msg := createMessage(ALICE_ID, &_BOB_ID, false)
+		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
 
 		reply := model.Reply{}
 		db.Db.Create(&model.Reply{
@@ -112,12 +98,12 @@ func Test_PostStart_Replies(t *testing.T) {
 
 	s.Test("returns all available replies, if unread replies exist", func(t *testing.T) {
 		_BOB_ID := BOB_ID
-		msg1 := createMessage(ALICE_ID, &_BOB_ID, false)
-		msg2 := createMessage(ALICE_ID, &_BOB_ID, false)
-		msg3 := createMessage(ALICE_ID, &_BOB_ID, false)
-		createReply(BOB_ID, msg1.ID, true)
-		createReply(BOB_ID, msg2.ID, false)
-		createReply(BOB_ID, msg3.ID, false)
+		msg1 := CreateMessage(ALICE_ID, &_BOB_ID, false)
+		msg2 := CreateMessage(ALICE_ID, &_BOB_ID, false)
+		msg3 := CreateMessage(ALICE_ID, &_BOB_ID, false)
+		CreateReply(BOB_ID, msg1.ID, true)
+		CreateReply(BOB_ID, msg2.ID, false)
+		CreateReply(BOB_ID, msg3.ID, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)
@@ -130,7 +116,7 @@ func Test_PostStart_Replies(t *testing.T) {
 }
 
 func Test_PostStart_Messages(t *testing.T) {
-	app := initApp()
+	app := InitApp()
 	db.InitDb()
 	db.RunDbMigrations()
 
@@ -147,7 +133,7 @@ func Test_PostStart_Messages(t *testing.T) {
 
 	s.Test("returns message, if assigned message exists", func(t *testing.T) {
 		_ALICE_ID := ALICE_ID
-		createMessage(BOB_ID, &_ALICE_ID, false)
+		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)
@@ -158,7 +144,7 @@ func Test_PostStart_Messages(t *testing.T) {
 
 	s.Test("doesn't return message, if assigned message exists but it's already read", func(t *testing.T) {
 		_ALICE_ID := ALICE_ID
-		createMessage(BOB_ID, &_ALICE_ID, true)
+		CreateMessage(BOB_ID, &_ALICE_ID, true)
 
 		w := sendStartRequest(app)
 
@@ -167,7 +153,7 @@ func Test_PostStart_Messages(t *testing.T) {
 	})
 
 	s.Test("returns message, if assigned-unread message doesn't exist and unassigned one exists", func(t *testing.T) {
-		createMessage(BOB_ID, nil, false)
+		CreateMessage(BOB_ID, nil, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)
@@ -178,7 +164,7 @@ func Test_PostStart_Messages(t *testing.T) {
 
 	s.Test("doesn't return message, if neither assigned-unread or unassigned messages exist", func(t *testing.T) {
 		_ALICE_ID := ALICE_ID
-		createMessage(BOB_ID, &_ALICE_ID, true)
+		CreateMessage(BOB_ID, &_ALICE_ID, true)
 
 		w := sendStartRequest(app)
 
@@ -199,33 +185,4 @@ func sendStartRequest(app *gin.Engine) *httptest.ResponseRecorder {
 	req.AddCookie(&http.Cookie{Name: "user_id", Value: ALICE_ID, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
-}
-
-func createMessage(userId string, assignedToUserId *string, isRead bool) model.Message {
-	createMsg := &model.Message{
-		UserId:     userId,
-		Text:       "Lorem ipsum",
-		AssignedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		IsRead:     isRead,
-	}
-	if assignedToUserId != nil {
-		createMsg.AssignedToUserId = sql.NullString{String: *assignedToUserId, Valid: true}
-	} else {
-		createMsg.AssignedToUserId = sql.NullString{Valid: false}
-	}
-
-	msg := model.Message{}
-	db.Db.Create(createMsg).First(&msg)
-	return msg
-}
-
-func createReply(userId string, messageId uint, isRead bool) model.Reply {
-	reply := model.Reply{}
-	db.Db.Create(&model.Reply{
-		UserId:    userId,
-		MessageId: messageId,
-		Text:      "Reply to Lorem ipsum",
-		IsRead:    isRead,
-	}).First(&reply)
-	return reply
 }

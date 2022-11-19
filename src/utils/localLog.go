@@ -6,8 +6,12 @@ import (
 	"time"
 )
 
-func Log(message ...string) {
-	fmt.Print(logTime(), strings.Join(message, " "), "\n")
+func Log(messages ...any) {
+	ss := []string{}
+	for _, m := range messages {
+		ss = append(ss, fmt.Sprint(m))
+	}
+	fmt.Print(logTime(), strings.Join(ss, " "), "\n")
 }
 
 func Logt(message ...string) {

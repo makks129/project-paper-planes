@@ -22,7 +22,7 @@ func StartMysqlContainer() {
 	}
 
 	utils.Log("Starting MySQL mock container...")
-	cmd := fmt.Sprintf("docker run --rm --name %s -p 3306:3306 -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_DATABASE=default -d -P %s --sql-mode=NO_ENGINE_SUBSTITUTION",
+	cmd := fmt.Sprintf("docker run --rm --name %s -p 3307:3306 -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_DATABASE=default -d -P %s --sql-mode=NO_ENGINE_SUBSTITUTION",
 		MYSQL_CONTAINER_NAME, MYSQL_PASSWORD, IMAGE)
 	res, error := execCmd(cmd)
 	if error != nil {
