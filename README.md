@@ -19,3 +19,6 @@ Unit + Functional tests
 - go test
 - [testify](https://github.com/stretchr/testify)
 - Custom MySQL mock with docker
+
+#### CI/CD
+- pre-commit hooks with [pre-commit](https://pre-commit.com/)
