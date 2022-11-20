@@ -11,6 +11,7 @@ import (
 	"github.com/makks129/project-paper-planes/src/model"
 	"github.com/makks129/project-paper-planes/test/suit"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // TODO cover 500 case with test (mock gorm to throw error)
@@ -34,6 +35,21 @@ func Test_SendMessage(t *testing.T) {
 		w := sendSendMessageRequest(app, `{"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
 
 		assert.Equal(t, 200, w.Code)
+
+		var message *model.Message
+		res := db.Db.Table("messages").Take(&message)
+
+		assert.Nil(t, res.Error)
+
+		messageMatcher := mock.MatchedBy(func(m *model.Message) bool {
+			return m.UserId == ALICE_ID &&
+				m.Text == "Lorem ipsum dolor sit amet, consectetur adipiscing elit." &&
+				!m.AssignedToUserId.Valid &&
+				!m.AssignedAt.Valid &&
+				!m.IsRead
+		})
+
+		assert.Equal(t, true, messageMatcher.Matches(message))
 	})
 
 }

@@ -67,8 +67,8 @@ func sendMessage(c *gin.Context) {
 	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
 	userId := userIdCookie.Value
 
-	var body SendMessageBody
-	c.ShouldBindJSON(&body)
+	bodyAny, _ := c.Get(VALIDATED_BODY)
+	body := bodyAny.(*SendMessageBody)
 
 	error := controller.SaveMessage(userId, body.Message)
 	if error != nil {

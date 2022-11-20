@@ -1,4 +1,4 @@
-package utils
+package validator
 
 import (
 	"sync"
@@ -22,11 +22,11 @@ type ValidationError struct {
 	Tag   string `json:"tag"`
 }
 
-func ValidateRequestBody[T interface{}](c *gin.Context) ([]ValidationError, error) {
+func ValidateRequestBody[T interface{}](c *gin.Context) (*T, []ValidationError, error) {
 	var body T
 	err1 := c.ShouldBindJSON(&body)
 	if err1 != nil {
-		return nil, err1
+		return nil, nil, err1
 	}
 
 	err2 := Validator().Struct(body)
@@ -38,5 +38,10 @@ func ValidateRequestBody[T interface{}](c *gin.Context) ([]ValidationError, erro
 			res = append(res, ValidationError{Field: e.Field(), Tag: e.Tag()})
 		}
 	}
-	return res, nil
+
+	if len(res) == 0 {
+		return &body, nil, nil
+	}
+
+	return nil, res, nil
 }

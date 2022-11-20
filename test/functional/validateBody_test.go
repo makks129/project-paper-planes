@@ -8,32 +8,43 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/router"
-	utils "github.com/makks129/project-paper-planes/src/utils"
+	"github.com/makks129/project-paper-planes/src/validator"
 	"github.com/makks129/project-paper-planes/test/suit"
 	testUtils "github.com/makks129/project-paper-planes/test/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-type TestBody struct {
+type TestRequestBody struct {
 	Message string `json:"message" validate:"required,min=2,max=10"`
 }
 
 type ErrorResponseBody struct {
-	Errors []utils.ValidationError `json:"errors"`
+	Errors []validator.ValidationError `json:"errors"`
+}
+
+type TestResponseBody struct {
+	ValidatedBody TestRequestBody `json:"validated_body"`
 }
 
 func Test_ValidateBody(t *testing.T) {
 	app := InitApp()
-	app.GET("/test", router.ValidateBody[TestBody])
+
+	app.GET("/test", router.ValidateBody[TestRequestBody], func(c *gin.Context) {
+		validatedBody, _ := c.Get(router.VALIDATED_BODY)
+		c.JSON(http.StatusOK, gin.H{"validated_body": validatedBody})
+	})
 
 	s := suit.Of(&suit.SubTests{T: t})
 
-	s.Test("returns 200, if body is correct", func(t *testing.T) {
+	s.Test("returns 200 and validated body, if body is correct", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		sendTestRequest(`{ "message": "Foo bar" }`, app, w)
 
+		body := testUtils.FromJson[TestResponseBody](w.Body)
+
 		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, "Foo bar", body.ValidatedBody.Message)
 	})
 
 	s.Test("returns 400, if Content-Type is not application/json", func(t *testing.T) {
