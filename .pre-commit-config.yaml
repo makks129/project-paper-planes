@@ -14,3 +14,15 @@ repos:
       - id: no-go-testing
       - id: golangci-lint
       - id: go-unit-tests
+  # - repo: https://github.com/tekwizely/pre-commit-golang
+  #   rev: v0.8.3
+  #   hooks:
+  #     - id: my-cmd-repo
+  #     - name: go-functional-tests
+  - repo: local
+    hooks:
+      - id: go-functional-tests
+        name: Functional tests
+        description: Runs functional tests
+        entry: make test
+        language: golang
