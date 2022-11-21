@@ -17,7 +17,7 @@ const COOKIE_USER_ID = "user_id"
 func SetupRouter(app *gin.Engine) {
 	app.POST("/start", RequireCookie(COOKIE_USER_ID), postStart)
 	app.POST("/send-message", RequireCookie(COOKIE_USER_ID), ValidateBody[SendMessageBody], sendMessage)
-	app.POST("/send-reply", sendReply)
+	app.POST("/send-reply", RequireCookie(COOKIE_USER_ID), ValidateBody[SendReplyBody], sendReply)
 	app.POST("/ack-message", ackMessage)
 }
 
@@ -60,17 +60,16 @@ func postStart(c *gin.Context) {
 }
 
 type SendMessageBody struct {
-	Message string `json:"message" validate:"required,min=10,max=10000"`
+	Text string `json:"text" validate:"required,min=1,max=10000"`
 }
 
 func sendMessage(c *gin.Context) {
 	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
 	userId := userIdCookie.Value
 
-	bodyAny, _ := c.Get(VALIDATED_BODY)
-	body := bodyAny.(*SendMessageBody)
+	body := c.MustGet(VALIDATED_BODY).(*SendMessageBody)
 
-	error := controller.SaveMessage(userId, body.Message)
+	error := controller.SaveMessage(userId, body.Text)
 	if error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})
 		return
@@ -79,7 +78,23 @@ func sendMessage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+type SendReplyBody struct {
+	MessageId uint   `json:"message_id" validate:"required"`
+	Text      string `json:"text" validate:"required,min=1,max=10000"`
+}
+
 func sendReply(c *gin.Context) {
+	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
+	userId := userIdCookie.Value
+
+	body := c.MustGet(VALIDATED_BODY).(*SendReplyBody)
+
+	error := controller.SaveReply(userId, body.MessageId, body.Text)
+	if error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{})
 }
 

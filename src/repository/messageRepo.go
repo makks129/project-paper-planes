@@ -54,10 +54,10 @@ func AssignMessage(userId string, messageId uint, tx *gorm.DB) error {
 	return res.Error
 }
 
-func SaveMessage(userId string, message string) error {
+func SaveMessage(userId string, text string) error {
 	res := db.Db.Create(&model.Message{
 		UserId: userId,
-		Text:   message,
+		Text:   text,
 	})
 	return res.Error
 }

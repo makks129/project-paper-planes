@@ -21,3 +21,7 @@ func GetReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	}
 	return nil, err.NothingAvailableError{}
 }
+
+func SaveReply(userId string, messageId uint, text string) error {
+	return repo.SaveReply(userId, messageId, text)
+}

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
 	"github.com/makks129/project-paper-planes/src/model"
 	"gorm.io/gorm"
@@ -30,4 +31,13 @@ func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	default:
 		return nil, res.Error
 	}
+}
+
+func SaveReply(userId string, messageId uint, text string) error {
+	res := db.Db.Create(&model.Reply{
+		UserId:    userId,
+		MessageId: messageId,
+		Text:      text,
+	})
+	return res.Error
 }

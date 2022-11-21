@@ -32,7 +32,7 @@ func Test_SendMessage(t *testing.T) {
 	})
 
 	s.Test("returns 200, if message is saved", func(t *testing.T) {
-		w := sendSendMessageRequest(app, `{"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
+		w := sendSendMessageRequest(app, `{"text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
 
 		assert.Equal(t, 200, w.Code)
 
