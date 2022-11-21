@@ -21,24 +21,6 @@ repos:
     rev: v1.0.0-rc.1
     hooks:
       - id: my-cmd-repo
-        name: go-functional-tests
-        alias: go-functional-tests
+        name: go-test
+        alias: go-test
         args: [make, test]
-
-  # - repo: local
-  #   hooks:
-  #     - id: go-functional-tests-setup
-  #       name: go-functional-tests-setup
-  #       description: Functional tests setup
-  #       entry: make test-setup
-  #       language: golang
-  #     - id: go-functional-tests
-  #       name: go-functional-tests
-  #       description: Functional tests
-  #       entry: make test-only
-  #       language: golang
-  #     - id: go-functional-tests-teardown
-  #       name: go-functional-tests-teardown
-  #       description: Functional tests teardown
-  #       entry: make test-teardown
-  #       language: golang
