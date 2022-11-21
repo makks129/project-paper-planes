@@ -8,8 +8,6 @@ import (
 )
 
 func main() {
-	print("ololo test")
-
 	wordPtr := flag.String("phase", "", "values: setup, teardown")
 	flag.Parse()
 	switch *wordPtr {
