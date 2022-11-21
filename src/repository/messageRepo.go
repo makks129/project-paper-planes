@@ -59,6 +59,7 @@ func SaveMessage(userId string, text string) error {
 	res := db.Db.Create(&model.Message{
 		UserId: userId,
 		Text:   text,
+		IsRead: false,
 	})
 
 	log.Println("SaveMessage", "\n| ERROR: ", res.Error, "\n ")

@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	"database/sql"
 	"log"
+	"time"
 
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
@@ -11,16 +13,10 @@ import (
 
 func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	replies := []*model.Reply{}
-
-	// SELECT r.*
-	// FROM messages m
-	// LEFT JOIN replies r
-	// ON m.id = r.message_id
-	// WHERE m.user_id = ? AND r.is_read = 0
-	res := tx.Table("messages").Select("replies.*").
-		Joins("LEFT JOIN replies ON messages.id = replies.message_id").
-		Where("messages.user_id = ?", userId).
-		Where("replies.is_read = 0").
+	res := tx.Table("replies AS r").
+		Select("r.*, m.text AS message_text, m.created_at AS message_created_at").
+		Joins("LEFT JOIN messages AS m ON r.message_id = m.id").
+		Where("r.assigned_to_user_id = ? AND r.is_read = ?", userId, false).
 		Find(&replies)
 
 	log.Println("GetUnreadReplies", "\n| replies: ", replies, "\n| ERROR: ", res.Error, "\n ")
@@ -35,11 +31,14 @@ func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	}
 }
 
-func SaveReply(userId string, messageId uint, text string) error {
+func SaveReply(userId string, messageId uint, messageUserId string, text string) error {
 	res := db.Db.Create(&model.Reply{
-		UserId:    userId,
-		MessageId: messageId,
-		Text:      text,
+		UserId:           userId,
+		MessageId:        messageId,
+		Text:             text,
+		AssignedToUserId: sql.NullString{String: messageUserId, Valid: true},
+		AssignedAt:       sql.NullTime{Time: time.Now(), Valid: true},
+		IsRead:           false,
 	})
 
 	log.Println("SaveReply", "\n| ERROR: ", res.Error, "\n ")

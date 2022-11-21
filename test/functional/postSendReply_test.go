@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +16,8 @@ import (
 )
 
 // TODO cover 500 case with test (mock gorm to throw error)
+
+// TODO ack message on reply
 
 func Test_PostSendReply(t *testing.T) {
 	app := InitApp()
@@ -32,7 +35,8 @@ func Test_PostSendReply(t *testing.T) {
 	})
 
 	s.Test("returns 200, if reply is saved", func(t *testing.T) {
-		w := sendSendReplyRequest(app, `{"message_id": 42, "text": "Answer to the Ultimate Question of Life, the Universe, and Everything"}`)
+		json := fmt.Sprintf(`{"message_id": 42, "message_user_id": "%s", "text": "Answer to the Ultimate Question of Life, the Universe, and Everything"}`, BOB_ID)
+		w := sendSendReplyRequest(app, json)
 
 		assert.Equal(t, 200, w.Code)
 

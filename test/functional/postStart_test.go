@@ -67,14 +67,7 @@ func Test_PostStart_Replies(t *testing.T) {
 	s.Test("returns no replies, if replies exist but are already read", func(t *testing.T) {
 		_BOB_ID := BOB_ID
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
-
-		reply := model.Reply{}
-		db.Db.Create(&model.Reply{
-			UserId:    BOB_ID,
-			MessageId: msg.ID,
-			Text:      "Reply to Lorem ipsum",
-			IsRead:    true,
-		}).First(&reply)
+		CreateReply(BOB_ID, msg.ID, ALICE_ID, true)
 
 		w := sendStartRequest(app)
 
@@ -87,21 +80,27 @@ func Test_PostStart_Replies(t *testing.T) {
 		msg1 := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		msg2 := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		msg3 := CreateMessage(ALICE_ID, &_BOB_ID, false)
-		CreateReply(BOB_ID, msg1.ID, nil, true)
-		CreateReply(BOB_ID, msg2.ID, nil, false)
-		CreateReply(BOB_ID, msg3.ID, nil, false)
+		CreateReply(BOB_ID, msg1.ID, ALICE_ID, true)
+		CreateReply(BOB_ID, msg2.ID, ALICE_ID, false)
+		CreateReply(BOB_ID, msg3.ID, ALICE_ID, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
 		assert.Len(t, body.Replies, 2)
+		// reply 1
 		assert.Equal(t, msg2.ID, body.Replies[0].MessageId)
+		assert.Equal(t, msg2.Text, body.Replies[0].MessageText)
+		assert.Equal(t, msg2.CreatedAt, body.Replies[0].MessageCreatedAt)
+		// reply 2
 		assert.Equal(t, msg3.ID, body.Replies[1].MessageId)
+		assert.Equal(t, msg3.Text, body.Replies[1].MessageText)
+		assert.Equal(t, msg3.CreatedAt, body.Replies[1].MessageCreatedAt)
 	})
 }
 
-func Test_PostStart_Messages(t *testing.T) {
+func Test_PostStart_Message(t *testing.T) {
 	app := InitApp()
 	db.InitDb()
 	db.RunDbMigrations()

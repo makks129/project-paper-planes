@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-const ALICE_ID = "mock_alice_id" // Alice: sends messages
-const BOB_ID = "mock_bob_id"     // Bob: send messages to Alice, or reads and replies to Alice's messages
+const ALICE_ID = "alice_id" // Alice: sends messages
+const BOB_ID = "bob_id"     // Bob: send messages to Alice, or reads and replies to Alice's messages
 
 func InitApp() *gin.Engine {
 	gin.SetMode(gin.TestMode)
@@ -43,25 +43,27 @@ func CreateMessage(userId string, assignedToUserId *string, isRead bool) model.M
 	}
 
 	msg := model.Message{}
-	db.Db.Create(createMsg).First(&msg)
+	res := db.Db.Create(createMsg).First(&msg)
+	if res.Error != nil {
+		panic(res.Error)
+	}
 	return msg
 }
 
-func CreateReply(userId string, messageId uint, assignedToUserId *string, isRead bool) model.Reply {
+func CreateReply(userId string, messageId uint, assignedToUserId string, isRead bool) model.Reply {
 	createReply := &model.Reply{
-		UserId:     userId,
-		MessageId:  messageId,
-		Text:       "Reply to Lorem ipsum",
-		AssignedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		IsRead:     isRead,
-	}
-	if assignedToUserId != nil {
-		createReply.AssignedToUserId = sql.NullString{String: *assignedToUserId, Valid: true}
-	} else {
-		createReply.AssignedToUserId = sql.NullString{Valid: false}
+		UserId:           userId,
+		MessageId:        messageId,
+		Text:             "Reply to Lorem ipsum",
+		AssignedToUserId: sql.NullString{String: assignedToUserId, Valid: true},
+		AssignedAt:       sql.NullTime{Time: time.Now(), Valid: true},
+		IsRead:           isRead,
 	}
 
 	reply := model.Reply{}
-	db.Db.Create(createReply).First(&reply)
+	res := db.Db.Create(createReply).First(&reply)
+	if res.Error != nil {
+		panic(res.Error)
+	}
 	return reply
 }

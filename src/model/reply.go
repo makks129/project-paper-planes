@@ -19,4 +19,8 @@ type Reply struct {
 
 	CreatedAt time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"`
+
+	// Read-only fields (->), not migrated as cols in the table (-:migration)
+	MessageText      string    `gorm:"column:message_text;type:text;->;-:migration"`
+	MessageCreatedAt time.Time `gorm:"column:message_created_at;type:datetime;->;-:migration"`
 }

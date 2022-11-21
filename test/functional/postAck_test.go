@@ -59,9 +59,8 @@ func Test_PostAck(t *testing.T) {
 
 	s.Test("returns 200, if reply is acked", func(t *testing.T) {
 		_BOB_ID := BOB_ID
-		_ALICE_ID := ALICE_ID
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, true)
-		rpl := CreateReply(BOB_ID, msg.ID, &_ALICE_ID, false)
+		rpl := CreateReply(BOB_ID, msg.ID, ALICE_ID, false)
 
 		json := fmt.Sprintf(`{"id": %d, "type": "reply"}`, rpl.ID)
 		w := sendAckRequest(app, ALICE_ID, json)

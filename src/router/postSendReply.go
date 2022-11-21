@@ -9,8 +9,9 @@ import (
 )
 
 type SendReplyBody struct {
-	MessageId uint   `json:"message_id" validate:"required"`
-	Text      string `json:"text" validate:"required,min=1,max=10000"`
+	MessageId     uint   `json:"message_id" validate:"required"`
+	MessageUserId string `json:"message_user_id" validate:"required"`
+	Text          string `json:"text" validate:"required,min=1,max=10000"`
 }
 
 func SendReply(c *gin.Context) {
@@ -19,7 +20,7 @@ func SendReply(c *gin.Context) {
 
 	body := c.MustGet(VALIDATED_BODY).(*SendReplyBody)
 
-	error := controller.SaveReply(userId, body.MessageId, body.Text)
+	error := controller.SaveReply(userId, body.MessageId, body.MessageUserId, body.Text)
 	if error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})
 		return
