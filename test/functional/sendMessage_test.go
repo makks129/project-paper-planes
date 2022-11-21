@@ -25,6 +25,8 @@ func Test_SendMessage(t *testing.T) {
 		bobbyDropTables(model.Message{})
 	}
 
+	print("ololo test")
+
 	s := suit.Of(&suit.SubTests{
 		T:          t,
 		BeforeEach: cleanupDb,

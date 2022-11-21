@@ -16,5 +16,7 @@ func main() {
 
 	app.Run(":9000")
 
+	print("ololo test")
+
 	// TODO start message free-up loop
 }
