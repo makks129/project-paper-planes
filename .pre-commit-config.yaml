@@ -21,6 +21,6 @@ repos:
     rev: v1.0.0-rc.1
     hooks:
       - id: my-cmd-repo
-        name: go-test
-        alias: go-test
+        name: go test
+        alias: go test
         args: [make, test]
