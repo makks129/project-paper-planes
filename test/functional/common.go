@@ -47,13 +47,21 @@ func CreateMessage(userId string, assignedToUserId *string, isRead bool) model.M
 	return msg
 }
 
-func CreateReply(userId string, messageId uint, isRead bool) model.Reply {
+func CreateReply(userId string, messageId uint, assignedToUserId *string, isRead bool) model.Reply {
+	createReply := &model.Reply{
+		UserId:     userId,
+		MessageId:  messageId,
+		Text:       "Reply to Lorem ipsum",
+		AssignedAt: sql.NullTime{Time: time.Now(), Valid: true},
+		IsRead:     isRead,
+	}
+	if assignedToUserId != nil {
+		createReply.AssignedToUserId = sql.NullString{String: *assignedToUserId, Valid: true}
+	} else {
+		createReply.AssignedToUserId = sql.NullString{Valid: false}
+	}
+
 	reply := model.Reply{}
-	db.Db.Create(&model.Reply{
-		UserId:    userId,
-		MessageId: messageId,
-		Text:      "Reply to Lorem ipsum",
-		IsRead:    isRead,
-	}).First(&reply)
+	db.Db.Create(createReply).First(&reply)
 	return reply
 }

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/makks129/project-paper-planes/src/db"
@@ -14,7 +15,7 @@ func GetAssignedUnreadMessage(userId string, tx *gorm.DB) (*model.Message, error
 	var message *model.Message
 	res := tx.Table("messages").Where("assigned_to_user_id = ? AND is_read = ?", userId, false).Take(&message)
 
-	// log.Println("GetAssignedUnreadMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
+	log.Println("GetAssignedUnreadMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
 	switch {
 	case res.Error == nil:
@@ -30,7 +31,7 @@ func GetLatestUnassignedMessage(tx *gorm.DB) (*model.Message, error) {
 	var message *model.Message
 	res := tx.Table("messages").Where("assigned_to_user_id IS NULL").Order("created_at DESC").Take(&message)
 
-	// log.Println("GetLatestUnassignedMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
+	log.Println("GetLatestUnassignedMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
 	switch {
 	case res.Error == nil:
@@ -49,7 +50,7 @@ func AssignMessage(userId string, messageId uint, tx *gorm.DB) error {
 	}
 	res := tx.Table("messages").Where("id = ?", messageId).Updates(updates)
 
-	// log.Println("AssignMessage", "\n| ERROR: ", res.Error, "\n ")
+	log.Println("AssignMessage", "\n| ERROR: ", res.Error, "\n ")
 
 	return res.Error
 }
@@ -59,5 +60,17 @@ func SaveMessage(userId string, text string) error {
 		UserId: userId,
 		Text:   text,
 	})
+
+	log.Println("SaveMessage", "\n| ERROR: ", res.Error, "\n ")
+
+	return res.Error
+}
+
+func AckMessage(userId string, messageId uint) error {
+	updates := model.Message{IsRead: true}
+	res := db.Db.Table("messages").Where("id = ? AND assigned_to_user_id = ?", messageId, userId).Updates(updates)
+
+	log.Println("AckMessage", "\n| ERROR: ", res.Error, "\n ")
+
 	return res.Error
 }

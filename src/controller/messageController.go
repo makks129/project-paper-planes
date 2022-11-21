@@ -38,3 +38,7 @@ func GetMessageOnStart(userId string, tx *gorm.DB) (*model.Message, error) {
 func SaveMessage(userId string, text string) error {
 	return repo.SaveMessage(userId, text)
 }
+
+func AckMessage(userId string, messageId uint) error {
+	return repo.AckMessage(userId, messageId)
+}

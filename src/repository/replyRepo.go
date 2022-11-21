@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"log"
+
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
 	"github.com/makks129/project-paper-planes/src/model"
@@ -21,7 +23,7 @@ func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 		Where("replies.is_read = 0").
 		Find(&replies)
 
-	// log.Println("GetUnreadReplies", "\n| replies: ", replies, "\n| ERROR: ", res.Error, "\n ")
+	log.Println("GetUnreadReplies", "\n| replies: ", replies, "\n| ERROR: ", res.Error, "\n ")
 
 	switch {
 	case len(replies) == 0:
@@ -39,5 +41,17 @@ func SaveReply(userId string, messageId uint, text string) error {
 		MessageId: messageId,
 		Text:      text,
 	})
+
+	log.Println("SaveReply", "\n| ERROR: ", res.Error, "\n ")
+
+	return res.Error
+}
+
+func AckReply(userId string, replyId uint) error {
+	updates := model.Reply{IsRead: true}
+	res := db.Db.Table("replies").Where("id = ? AND assigned_to_user_id = ?", replyId, userId).Updates(updates)
+
+	log.Println("AckReply", "\n| ERROR: ", res.Error, "\n ")
+
 	return res.Error
 }

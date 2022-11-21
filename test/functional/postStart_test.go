@@ -87,9 +87,9 @@ func Test_PostStart_Replies(t *testing.T) {
 		msg1 := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		msg2 := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		msg3 := CreateMessage(ALICE_ID, &_BOB_ID, false)
-		CreateReply(BOB_ID, msg1.ID, true)
-		CreateReply(BOB_ID, msg2.ID, false)
-		CreateReply(BOB_ID, msg3.ID, false)
+		CreateReply(BOB_ID, msg1.ID, nil, true)
+		CreateReply(BOB_ID, msg2.ID, nil, false)
+		CreateReply(BOB_ID, msg3.ID, nil, false)
 
 		w := sendStartRequest(app)
 		body := utils.FromJson[PostStartBody](w.Body)

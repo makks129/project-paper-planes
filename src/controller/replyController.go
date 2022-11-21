@@ -25,3 +25,7 @@ func GetReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 func SaveReply(userId string, messageId uint, text string) error {
 	return repo.SaveReply(userId, messageId, text)
 }
+
+func AckReply(userId string, replyId uint) error {
+	return repo.AckReply(userId, replyId)
+}
