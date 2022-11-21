@@ -25,7 +25,7 @@ func Test_PostSendReply(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Reply{})
+		bobbyDropTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{
@@ -35,34 +35,55 @@ func Test_PostSendReply(t *testing.T) {
 	})
 
 	s.Test("returns 200, if reply is saved", func(t *testing.T) {
-		json := fmt.Sprintf(`{"message_id": 42, "message_user_id": "%s", "text": "Answer to the Ultimate Question of Life, the Universe, and Everything"}`, BOB_ID)
-		w := sendSendReplyRequest(app, json)
+		_BOB_ID := BOB_ID
+		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
+
+		json := fmt.Sprintf(`{"message_id": %d, "message_user_id": "%s", "text": "Thank you for this message stranger."}`, msg.ID, msg.UserId)
+		w := SendSendReplyRequest(app, BOB_ID, json)
 
 		assert.Equal(t, 200, w.Code)
 
 		var reply *model.Reply
-		res := db.Db.Table("replies").Take(&reply)
+		replyRes := db.Db.Table("replies").Take(&reply)
 
-		assert.Nil(t, res.Error)
+		assert.Nil(t, replyRes.Error)
 
-		replyMatcher := mock.MatchedBy(func(m *model.Reply) bool {
-			return m.UserId == BOB_ID &&
-				m.MessageId == 42 &&
-				m.Text == "Answer to the Ultimate Question of Life, the Universe, and Everything" &&
-				!m.IsRead
+		replyMatcher := mock.MatchedBy(func(r *model.Reply) bool {
+			return r.UserId == BOB_ID &&
+				r.MessageId == msg.ID &&
+				r.Text == "Thank you for this message stranger." &&
+				r.AssignedToUserId.Valid &&
+				r.AssignedToUserId.String == ALICE_ID &&
+				r.AssignedAt.Valid &&
+				!r.IsRead
 		})
 
 		assert.Equal(t, true, replyMatcher.Matches(reply))
+
+		var message *model.Message
+		messageRes := db.Db.Table("messages").Take(&message)
+
+		assert.Nil(t, messageRes.Error)
+
+		messageMatcher := mock.MatchedBy(func(m *model.Message) bool {
+			return m.UserId == ALICE_ID &&
+				m.AssignedToUserId.Valid &&
+				m.AssignedToUserId.String == BOB_ID &&
+				m.AssignedAt.Valid &&
+				m.IsRead // acked - marked as read
+		})
+
+		assert.Equal(t, true, messageMatcher.Matches(message))
 	})
 
 }
 
-func sendSendReplyRequest(app *gin.Engine, jsonStr string) *httptest.ResponseRecorder {
+func SendSendReplyRequest(app *gin.Engine, fromUserId string, jsonStr string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	var json = []byte(jsonStr)
 	req, _ := http.NewRequest("POST", "/send-reply", bytes.NewBuffer(json))
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&http.Cookie{Name: "user_id", Value: BOB_ID, Secure: true, HttpOnly: true})
+	req.AddCookie(&http.Cookie{Name: "user_id", Value: fromUserId, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
 }

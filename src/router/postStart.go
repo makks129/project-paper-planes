@@ -18,7 +18,7 @@ func PostStart(c *gin.Context) {
 
 	error := db.Db.Transaction(func(tx *gorm.DB) error {
 
-		replies, err1 := controller.GetReplies(userId, tx)
+		replies, err1 := controller.GetReplies(tx, userId)
 		// log.Println("postStart", "\n| replies: ", replies, "\n| ERROR: ", err1, "\n ")
 		switch {
 		case len(replies) > 0:
@@ -31,7 +31,7 @@ func PostStart(c *gin.Context) {
 			return err.GenericServerError{}
 		}
 
-		message, err2 := controller.GetMessageOnStart(userId, tx)
+		message, err2 := controller.GetMessageOnStart(tx, userId)
 		// log.Println("postStart", "\n| message: ", message, "\n| ERROR: ", err2, "\n ")
 		switch {
 		case message != nil:

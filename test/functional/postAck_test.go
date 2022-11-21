@@ -37,7 +37,7 @@ func Test_PostAck(t *testing.T) {
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
 
 		json := fmt.Sprintf(`{"id": %d, "type": "message"}`, msg.ID)
-		w := sendAckRequest(app, BOB_ID, json)
+		w := SendAckRequest(app, BOB_ID, json)
 
 		assert.Equal(t, 200, w.Code)
 
@@ -63,7 +63,7 @@ func Test_PostAck(t *testing.T) {
 		rpl := CreateReply(BOB_ID, msg.ID, ALICE_ID, false)
 
 		json := fmt.Sprintf(`{"id": %d, "type": "reply"}`, rpl.ID)
-		w := sendAckRequest(app, ALICE_ID, json)
+		w := SendAckRequest(app, ALICE_ID, json)
 
 		assert.Equal(t, 200, w.Code)
 
@@ -84,18 +84,18 @@ func Test_PostAck(t *testing.T) {
 	})
 
 	s.Test("returns 400, if type is invalid", func(t *testing.T) {
-		w := sendAckRequest(app, ALICE_ID, `{"id": 1, "type": "invalid"}`)
+		w := SendAckRequest(app, ALICE_ID, `{"id": 1, "type": "invalid"}`)
 
 		assert.Equal(t, 400, w.Code)
 	})
 }
 
-func sendAckRequest(app *gin.Engine, from string, jsonStr string) *httptest.ResponseRecorder {
+func SendAckRequest(app *gin.Engine, fromUserId string, jsonStr string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	var json = []byte(jsonStr)
 	req, _ := http.NewRequest("POST", "/ack", bytes.NewBuffer(json))
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&http.Cookie{Name: "user_id", Value: from, Secure: true, HttpOnly: true})
+	req.AddCookie(&http.Cookie{Name: "user_id", Value: fromUserId, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
 }

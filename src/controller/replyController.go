@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
-	replies, error := repo.GetUnreadReplies(userId, tx)
+func GetReplies(tx *gorm.DB, userId string) ([]*model.Reply, error) {
+	replies, error := repo.GetUnreadReplies(tx, userId)
 
 	// log.Println("GetReplies", "\n| replies: ", replies, "\n| ERROR: ", error, "\n ")
 
@@ -22,8 +22,17 @@ func GetReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	return nil, err.NothingAvailableError{}
 }
 
-func SaveReply(userId string, messageId uint, messageUserId string, text string) error {
-	return repo.SaveReply(userId, messageId, messageUserId, text)
+func SaveReply(tx *gorm.DB, userId string, messageId uint, messageUserId string, text string) error {
+	// Saving a reply for a message automatically acks the message as well
+	ackMessageError := repo.AckMessage(tx, userId, messageId)
+	if ackMessageError != nil {
+		return ackMessageError
+	}
+	saveReplyError := repo.SaveReply(tx, userId, messageId, messageUserId, text)
+	if saveReplyError != nil {
+		return saveReplyError
+	}
+	return nil
 }
 
 func AckReply(userId string, replyId uint) error {

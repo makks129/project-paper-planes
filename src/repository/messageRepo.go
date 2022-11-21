@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetAssignedUnreadMessage(userId string, tx *gorm.DB) (*model.Message, error) {
+func GetAssignedUnreadMessage(tx *gorm.DB, userId string) (*model.Message, error) {
 	var message *model.Message
 	res := tx.Table("messages").Where("assigned_to_user_id = ? AND is_read = ?", userId, false).Take(&message)
 
@@ -67,9 +67,9 @@ func SaveMessage(userId string, text string) error {
 	return res.Error
 }
 
-func AckMessage(userId string, messageId uint) error {
+func AckMessage(tx *gorm.DB, userId string, messageId uint) error {
 	updates := model.Message{IsRead: true}
-	res := db.Db.Table("messages").Where("id = ? AND assigned_to_user_id = ?", messageId, userId).Updates(updates)
+	res := tx.Table("messages").Where("id = ? AND assigned_to_user_id = ?", messageId, userId).Updates(updates)
 
 	log.Println("AckMessage", "\n| ERROR: ", res.Error, "\n ")
 

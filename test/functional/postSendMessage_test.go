@@ -32,7 +32,7 @@ func Test_PostSendMessage(t *testing.T) {
 	})
 
 	s.Test("returns 200, if message is saved", func(t *testing.T) {
-		w := sendSendMessageRequest(app, `{"text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
+		w := SendSendMessageRequest(app, ALICE_ID, `{"text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
 
 		assert.Equal(t, 200, w.Code)
 
@@ -54,12 +54,12 @@ func Test_PostSendMessage(t *testing.T) {
 
 }
 
-func sendSendMessageRequest(app *gin.Engine, jsonStr string) *httptest.ResponseRecorder {
+func SendSendMessageRequest(app *gin.Engine, fromUserId string, jsonStr string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	var json = []byte(jsonStr)
 	req, _ := http.NewRequest("POST", "/send-message", bytes.NewBuffer(json))
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&http.Cookie{Name: "user_id", Value: ALICE_ID, Secure: true, HttpOnly: true})
+	req.AddCookie(&http.Cookie{Name: "user_id", Value: fromUserId, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
 }

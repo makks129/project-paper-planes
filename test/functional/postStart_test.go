@@ -24,7 +24,7 @@ func Test_PostStart_NoContent(t *testing.T) {
 	s := suit.Of(&suit.SubTests{T: t})
 
 	s.Test("returns 204, if no replies or messages exist", func(t *testing.T) {
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
@@ -47,7 +47,7 @@ func Test_PostStart_Replies(t *testing.T) {
 	})
 
 	s.Test("returns no replies, if no messages exist", func(t *testing.T) {
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
@@ -57,7 +57,7 @@ func Test_PostStart_Replies(t *testing.T) {
 		_ALICE_ID := ALICE_ID
 		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 		body := utils.FromJson[PostStartBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
@@ -69,7 +69,7 @@ func Test_PostStart_Replies(t *testing.T) {
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		CreateReply(BOB_ID, msg.ID, ALICE_ID, true)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
@@ -84,7 +84,7 @@ func Test_PostStart_Replies(t *testing.T) {
 		CreateReply(BOB_ID, msg2.ID, ALICE_ID, false)
 		CreateReply(BOB_ID, msg3.ID, ALICE_ID, false)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 		body := utils.FromJson[PostStartBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
@@ -120,7 +120,7 @@ func Test_PostStart_Message(t *testing.T) {
 		_ALICE_ID := ALICE_ID
 		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 		body := utils.FromJson[PostStartBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
@@ -131,7 +131,7 @@ func Test_PostStart_Message(t *testing.T) {
 		_ALICE_ID := ALICE_ID
 		CreateMessage(BOB_ID, &_ALICE_ID, true)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 
 		assert.Equal(t, 204, w.Code)
 		assert.Equal(t, "", w.Body.String())
@@ -140,7 +140,7 @@ func Test_PostStart_Message(t *testing.T) {
 	s.Test("returns message, if assigned-unread message doesn't exist and unassigned one exists", func(t *testing.T) {
 		CreateMessage(BOB_ID, nil, false)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 		body := utils.FromJson[PostStartBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
@@ -151,7 +151,7 @@ func Test_PostStart_Message(t *testing.T) {
 		_ALICE_ID := ALICE_ID
 		CreateMessage(BOB_ID, &_ALICE_ID, true)
 
-		w := sendStartRequest(app)
+		w := SendStartRequest(app, ALICE_ID)
 
 		assert.Equal(t, 204, w.Code)
 		assert.NotNil(t, "", w.Body.String())
@@ -164,10 +164,10 @@ type PostStartBody struct {
 	Message *model.Message `json:"message"`
 }
 
-func sendStartRequest(app *gin.Engine) *httptest.ResponseRecorder {
+func SendStartRequest(app *gin.Engine, fromUserId string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/start", nil)
-	req.AddCookie(&http.Cookie{Name: "user_id", Value: ALICE_ID, Secure: true, HttpOnly: true})
+	req.AddCookie(&http.Cookie{Name: "user_id", Value: fromUserId, Secure: true, HttpOnly: true})
 	app.ServeHTTP(w, req)
 	return w
 }

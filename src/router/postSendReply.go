@@ -1,11 +1,14 @@
 package router
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/controller"
+	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
+	"gorm.io/gorm"
 )
 
 type SendReplyBody struct {
@@ -20,11 +23,20 @@ func SendReply(c *gin.Context) {
 
 	body := c.MustGet(VALIDATED_BODY).(*SendReplyBody)
 
-	error := controller.SaveReply(userId, body.MessageId, body.MessageUserId, body.Text)
-	if error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})
-		return
-	}
+	error := db.Db.Transaction(func(tx *gorm.DB) error {
 
-	c.JSON(http.StatusOK, gin.H{})
+		error := controller.SaveReply(tx, userId, body.MessageId, body.MessageUserId, body.Text)
+
+		if error != nil {
+			log.Println("SendReply", "\n| ERROR: ", error, "\n ")
+			return err.GenericServerError{}
+		}
+
+		c.JSON(http.StatusOK, gin.H{})
+		return nil
+	})
+
+	if error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	}
 }

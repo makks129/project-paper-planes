@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
+func GetUnreadReplies(tx *gorm.DB, userId string) ([]*model.Reply, error) {
 	replies := []*model.Reply{}
 	res := tx.Table("replies AS r").
 		Select("r.*, m.text AS message_text, m.created_at AS message_created_at").
@@ -31,8 +31,8 @@ func GetUnreadReplies(userId string, tx *gorm.DB) ([]*model.Reply, error) {
 	}
 }
 
-func SaveReply(userId string, messageId uint, messageUserId string, text string) error {
-	res := db.Db.Create(&model.Reply{
+func SaveReply(tx *gorm.DB, userId string, messageId uint, messageUserId string, text string) error {
+	res := tx.Create(&model.Reply{
 		UserId:           userId,
 		MessageId:        messageId,
 		Text:             text,
