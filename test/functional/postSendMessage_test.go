@@ -16,7 +16,7 @@ import (
 
 // TODO cover 500 case with test (mock gorm to throw error)
 
-func Test_SendMessage(t *testing.T) {
+func Test_PostSendMessage(t *testing.T) {
 	app := InitApp()
 	db.InitDb()
 	db.RunDbMigrations()

@@ -9,16 +9,6 @@ import (
 	"github.com/makks129/project-paper-planes/src/validator"
 )
 
-func RequireCookie(cookie string) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		_, error := c.Request.Cookie(cookie)
-		if error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{})
-			c.Abort()
-		}
-	}
-}
-
 const VALIDATED_BODY = "validated_body"
 
 func ValidateBody[T interface{}](c *gin.Context) {
