@@ -45,6 +45,14 @@ func GetMessageOnStart(tx *gorm.DB, userId string) (*model.Message, error) {
 }
 
 func SaveMessage(userId string, text string) error {
+	userCreatedMessageToday, error := repo.HasUserCreatedMessageToday(userId)
+	switch {
+	case userCreatedMessageToday:
+		return err.CannotWriteMoreMessagesError{}
+	case error != nil:
+		return error
+	}
+
 	return repo.SaveMessage(userId, text)
 }
 

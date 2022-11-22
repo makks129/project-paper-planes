@@ -94,6 +94,22 @@ func SaveMessage(userId string, text string) error {
 	return res.Error
 }
 
+func HasUserCreatedMessageToday(userId string) (bool, error) {
+	var count int64
+	res := db.Db.Table("messages").
+		Where("user_id = ?", userId).            // from this user
+		Where("DATE(created_at) = DATE(NOW())"). // created today
+		Count(&count)
+
+	log.Println("HasUserCreatedMessageToday", "\n| count: ", count, "\n| ERROR: ", res.Error, "\n ")
+
+	if res.Error != nil {
+		return false, res.Error
+	}
+
+	return count > 0, nil
+}
+
 func AckMessage(tx *gorm.DB, userId string, messageId uint) error {
 	updates := model.Message{IsRead: true}
 	res := tx.Table("messages").Where("id = ? AND assigned_to_user_id = ?", messageId, userId).Updates(updates)

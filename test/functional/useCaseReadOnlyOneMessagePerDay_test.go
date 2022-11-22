@@ -29,7 +29,7 @@ func Test_ReadOnlyOneMessagePerDay(t *testing.T) {
 		AfterAll:   cleanupDb,
 	})
 
-	s.Test("user doesn't get to read another message, if they already read a message today", func(t *testing.T) {
+	s.Test("user doesn't get to read another message, if they have already read a message today", func(t *testing.T) {
 		// Bob sends a message
 		msgJson := `{"text": "Hey there stranger."}`
 		sendMessageRes := SendSendMessageRequest(app, BOB_ID, msgJson)
@@ -85,7 +85,7 @@ func Test_ReadOnlyOneMessagePerDay(t *testing.T) {
 		assert.Equal(t, "Hey there stranger.", startAliceResBody2.Message.Text)
 	})
 
-	s.Test("user will keep receiving the same message, if it's assigned to them", func(t *testing.T) {
+	s.Test("user gets to read another message, if it's already the next day", func(t *testing.T) {
 		// Bob sends a message
 		msgJson := `{"text": "Hey there stranger."}`
 		sendMessageRes := SendSendMessageRequest(app, BOB_ID, msgJson)

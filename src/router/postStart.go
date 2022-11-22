@@ -13,9 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const NO_CONTENT_CODE_NOTHING_AVAILABLE = 10
-const NO_CONTENT_CODE_CANNOT_RECEIVE_MORE_MESSAGES = 20
-
 type PostStartResponseBody struct {
 	Replies []*model.Reply `json:"replies"`
 	Message *model.Message `json:"message"`
@@ -48,10 +45,10 @@ func PostStart(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"message": message})
 			return nil
 		case errors.As(err2, &err.NothingAvailableError{}):
-			c.JSON(http.StatusOK, gin.H{"code": NO_CONTENT_CODE_NOTHING_AVAILABLE})
+			c.JSON(http.StatusOK, gin.H{"code": err.CODE_NOTHING_AVAILABLE})
 			return nil
 		case errors.As(err2, &err.CannotReceiveMoreMessagesError{}):
-			c.JSON(http.StatusOK, gin.H{"code": NO_CONTENT_CODE_CANNOT_RECEIVE_MORE_MESSAGES})
+			c.JSON(http.StatusOK, gin.H{"code": err.CODE_CANNOT_RECEIVE_MORE_MESSAGES})
 			return nil
 		default:
 			return err.GenericServerError{}
