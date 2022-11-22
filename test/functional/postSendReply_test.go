@@ -17,8 +17,6 @@ import (
 
 // TODO cover 500 case with test (mock gorm to throw error)
 
-// TODO ack message on reply
-
 func Test_PostSendReply(t *testing.T) {
 	app := InitApp()
 	db.InitDb()

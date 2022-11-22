@@ -2,14 +2,14 @@
 Project Paper Planes
 
 ### Context
-Written in Go only because I wanted to get more experience with it.
-TODO TDD
+Written using TDD with functional tests.
+
 TODO where it's running
 
 ## Stack
 
 #### App
-- go / [gin-gonic](https://github.com/gin-gonic/gin)
+- go / [gin-gonic](https://github.com/gin-gonic/gin) (go is chosen only to get more exp with the language)
 - docker compose
 - [air](https://github.com/cosmtrek/air) for Gin live-reload
   - see `.air.toml`
