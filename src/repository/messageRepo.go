@@ -13,9 +13,32 @@ import (
 
 func GetAssignedUnreadMessage(tx *gorm.DB, userId string) (*model.Message, error) {
 	var message *model.Message
-	res := tx.Table("messages").Where("assigned_to_user_id = ? AND is_read = ?", userId, false).Take(&message)
+	res := tx.Table("messages").
+		Where("assigned_to_user_id = ?", userId). // assigned
+		Where("is_read = ?", false).              // unread
+		Take(&message)
 
 	log.Println("GetAssignedUnreadMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
+
+	switch {
+	case res.Error == nil:
+		return message, nil
+	case res.Error.Error() == "record not found":
+		return nil, err.NotFoundError{}
+	default:
+		return nil, res.Error
+	}
+}
+
+func GetAssignedTodayMessage(tx *gorm.DB, userId string) (*model.Message, error) {
+	var message *model.Message
+	res := tx.Table("messages").
+		Where("assigned_to_user_id = ?", userId). // assigned
+		Where("is_read = ?", true).               // read
+		Where("DATE(assigned_at) = DATE(NOW())"). // today
+		Take(&message)
+
+	log.Println("GetAssignedTodayMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
 	switch {
 	case res.Error == nil:
@@ -30,9 +53,9 @@ func GetAssignedUnreadMessage(tx *gorm.DB, userId string) (*model.Message, error
 func GetLatestUnassignedMessage(tx *gorm.DB, userId string) (*model.Message, error) {
 	var message *model.Message
 	res := tx.Table("messages").
-		Where("user_id != ?", userId).
-		Where("assigned_to_user_id IS NULL").
-		Order("created_at DESC").
+		Where("user_id != ?", userId).        // from someone else
+		Where("assigned_to_user_id IS NULL"). // unassigned
+		Order("created_at DESC").             // latest
 		Take(&message)
 
 	log.Println("GetLatestUnassignedMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")

@@ -8,9 +8,19 @@ import (
 	"github.com/makks129/project-paper-planes/src/controller"
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
+	"github.com/makks129/project-paper-planes/src/model"
 	"github.com/makks129/project-paper-planes/src/utils"
 	"gorm.io/gorm"
 )
+
+const NO_CONTENT_CODE_NOTHING_AVAILABLE = 10
+const NO_CONTENT_CODE_CANNOT_RECEIVE_MORE_MESSAGES = 20
+
+type PostStartResponseBody struct {
+	Replies []*model.Reply `json:"replies"`
+	Message *model.Message `json:"message"`
+	Code    int            `json:"code"`
+}
 
 func PostStart(c *gin.Context) {
 	userIdCookie, _ := c.Request.Cookie(COOKIE_USER_ID)
@@ -38,7 +48,10 @@ func PostStart(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"message": message})
 			return nil
 		case errors.As(err2, &err.NothingAvailableError{}):
-			c.JSON(http.StatusNoContent, gin.H{})
+			c.JSON(http.StatusOK, gin.H{"code": NO_CONTENT_CODE_NOTHING_AVAILABLE})
+			return nil
+		case errors.As(err2, &err.CannotReceiveMoreMessagesError{}):
+			c.JSON(http.StatusOK, gin.H{"code": NO_CONTENT_CODE_CANNOT_RECEIVE_MORE_MESSAGES})
 			return nil
 		default:
 			return err.GenericServerError{}

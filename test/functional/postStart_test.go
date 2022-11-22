@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/model"
+	"github.com/makks129/project-paper-planes/src/router"
 	"github.com/makks129/project-paper-planes/test/suit"
 	"github.com/makks129/project-paper-planes/test/utils"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 // TODO cover 500 case with test (mock gorm to throw error)
@@ -23,11 +23,12 @@ func Test_PostStart_NoContent(t *testing.T) {
 
 	s := suit.Of(&suit.SubTests{T: t})
 
-	s.Test("returns 204, if no replies or messages exist", func(t *testing.T) {
-		w := SendStartRequest(app, ALICE_ID)
+	s.Test("returns 200 code 10, if no replies or messages exist", func(t *testing.T) {
+		res := SendStartRequest(app, ALICE_ID)
+		body := utils.FromJson[router.PostStartResponseBody](res.Body)
 
-		assert.Equal(t, 204, w.Code)
-		assert.Equal(t, "", w.Body.String())
+		assert.Equal(t, 200, res.Code)
+		assert.Equal(t, 10, body.Code)
 	})
 }
 
@@ -47,10 +48,11 @@ func Test_PostStart_Replies(t *testing.T) {
 	})
 
 	s.Test("returns no replies, if no messages exist", func(t *testing.T) {
-		w := SendStartRequest(app, ALICE_ID)
+		res := SendStartRequest(app, ALICE_ID)
+		body := utils.FromJson[router.PostStartResponseBody](res.Body)
 
-		assert.Equal(t, 204, w.Code)
-		assert.Equal(t, "", w.Body.String())
+		assert.Equal(t, 200, res.Code)
+		assert.Equal(t, 10, body.Code)
 	})
 
 	s.Test("returns no replies, if replies do not exist", func(t *testing.T) {
@@ -58,7 +60,7 @@ func Test_PostStart_Replies(t *testing.T) {
 		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
 		w := SendStartRequest(app, ALICE_ID)
-		body := utils.FromJson[PostStartBody](w.Body)
+		body := utils.FromJson[router.PostStartResponseBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
 		assert.NotNil(t, body.Message)
@@ -69,10 +71,11 @@ func Test_PostStart_Replies(t *testing.T) {
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
 		CreateReply(BOB_ID, msg.ID, ALICE_ID, true)
 
-		w := SendStartRequest(app, ALICE_ID)
+		res := SendStartRequest(app, ALICE_ID)
+		body := utils.FromJson[router.PostStartResponseBody](res.Body)
 
-		assert.Equal(t, 204, w.Code)
-		assert.Equal(t, "", w.Body.String())
+		assert.Equal(t, 200, res.Code)
+		assert.Equal(t, 10, body.Code)
 	})
 
 	s.Test("returns all available replies, if unread replies exist", func(t *testing.T) {
@@ -85,7 +88,7 @@ func Test_PostStart_Replies(t *testing.T) {
 		CreateReply(BOB_ID, msg3.ID, ALICE_ID, false)
 
 		w := SendStartRequest(app, ALICE_ID)
-		body := utils.FromJson[PostStartBody](w.Body)
+		body := utils.FromJson[router.PostStartResponseBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
 		assert.Len(t, body.Replies, 2)
@@ -106,8 +109,7 @@ func Test_PostStart_Message(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Message{})
-		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Reply{})
+		bobbyDropTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{
@@ -121,47 +123,33 @@ func Test_PostStart_Message(t *testing.T) {
 		CreateMessage(BOB_ID, &_ALICE_ID, false)
 
 		w := SendStartRequest(app, ALICE_ID)
-		body := utils.FromJson[PostStartBody](w.Body)
+		body := utils.FromJson[router.PostStartResponseBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
 		assert.NotNil(t, body.Message)
-	})
-
-	s.Test("doesn't return message, if assigned message exists but it's already read", func(t *testing.T) {
-		_ALICE_ID := ALICE_ID
-		CreateMessage(BOB_ID, &_ALICE_ID, true)
-
-		w := SendStartRequest(app, ALICE_ID)
-
-		assert.Equal(t, 204, w.Code)
-		assert.Equal(t, "", w.Body.String())
 	})
 
 	s.Test("returns message, if assigned-unread message doesn't exist and unassigned one exists", func(t *testing.T) {
 		CreateMessage(BOB_ID, nil, false)
 
 		w := SendStartRequest(app, ALICE_ID)
-		body := utils.FromJson[PostStartBody](w.Body)
+		body := utils.FromJson[router.PostStartResponseBody](w.Body)
 
 		assert.Equal(t, 200, w.Code)
 		assert.NotNil(t, body.Message)
 	})
 
-	s.Test("doesn't return message, if neither assigned-unread or unassigned messages exist", func(t *testing.T) {
+	s.Test("doesn't return message, if assigned read today message exist", func(t *testing.T) {
 		_ALICE_ID := ALICE_ID
 		CreateMessage(BOB_ID, &_ALICE_ID, true)
 
-		w := SendStartRequest(app, ALICE_ID)
+		res := SendStartRequest(app, ALICE_ID)
+		body := utils.FromJson[router.PostStartResponseBody](res.Body)
 
-		assert.Equal(t, 204, w.Code)
-		assert.NotNil(t, "", w.Body.String())
+		assert.Equal(t, 200, res.Code)
+		assert.Equal(t, 20, body.Code)
 	})
 
-}
-
-type PostStartBody struct {
-	Replies []*model.Reply `json:"replies"`
-	Message *model.Message `json:"message"`
 }
 
 func SendStartRequest(app *gin.Engine, fromUserId string) *httptest.ResponseRecorder {

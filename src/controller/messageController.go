@@ -11,26 +11,34 @@ import (
 )
 
 func GetMessageOnStart(tx *gorm.DB, userId string) (*model.Message, error) {
-	assignedMessage, err1 := repo.GetAssignedUnreadMessage(tx, userId)
+	assignedUnreadMessage, err1 := repo.GetAssignedUnreadMessage(tx, userId)
 
-	if assignedMessage != nil {
-		return assignedMessage, nil
+	if assignedUnreadMessage != nil {
+		return assignedUnreadMessage, nil
 	} else if !errors.As(err1, &err.NotFoundError{}) {
 		return nil, err1
-	}
+	} // if such message is not found, continue
 
-	latestMessage, err2 := repo.GetLatestUnassignedMessage(tx, userId)
+	assignedReadTodayMessage, err2 := repo.GetAssignedTodayMessage(tx, userId)
+
+	if assignedReadTodayMessage != nil {
+		return nil, err.CannotReceiveMoreMessagesError{}
+	} else if !errors.As(err2, &err.NotFoundError{}) {
+		return nil, err2
+	} // if such message is not found, continue
+
+	latestMessage, err3 := repo.GetLatestUnassignedMessage(tx, userId)
 
 	if latestMessage != nil {
 
-		err3 := repo.AssignMessage(userId, latestMessage.ID, tx)
-		if err3 != nil {
-			return nil, err3
+		err4 := repo.AssignMessage(userId, latestMessage.ID, tx)
+		if err4 != nil {
+			return nil, err4
 		}
 
 		return latestMessage, nil
-	} else if !errors.As(err2, &err.NotFoundError{}) {
-		return nil, err2
+	} else if !errors.As(err3, &err.NotFoundError{}) {
+		return nil, err3
 	}
 
 	return nil, err.NothingAvailableError{}

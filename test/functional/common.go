@@ -11,8 +11,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const ALICE_ID = "alice_id" // Alice: sends messages
-const BOB_ID = "bob_id"     // Bob: send messages to Alice, or reads and replies to Alice's messages
+const ALICE_ID = "alice_id"     // Alice: sends messages
+const BOB_ID = "bob_id"         // Bob: send messages to Alice, or reads and replies to Alice's messages
+const CHARLIE_ID = "charlie_id" // Charlie: send messages to Alice, or reads and replies to Alice's messages
 
 func InitApp() *gin.Engine {
 	gin.SetMode(gin.TestMode)

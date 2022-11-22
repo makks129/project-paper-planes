@@ -17,3 +17,9 @@ type NothingAvailableError struct{}
 func (e NothingAvailableError) Error() string {
 	return "nothing available"
 }
+
+type CannotReceiveMoreMessagesError struct{}
+
+func (e CannotReceiveMoreMessagesError) Error() string {
+	return "cannot receive more messages"
+}

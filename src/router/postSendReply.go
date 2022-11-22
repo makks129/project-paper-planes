@@ -32,7 +32,7 @@ func SendReply(c *gin.Context) {
 			return err.GenericServerError{}
 		}
 
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusCreated, gin.H{})
 		return nil
 	})
 

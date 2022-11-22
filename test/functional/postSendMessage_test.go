@@ -34,7 +34,7 @@ func Test_PostSendMessage(t *testing.T) {
 	s.Test("returns 200, if message is saved", func(t *testing.T) {
 		w := SendSendMessageRequest(app, ALICE_ID, `{"text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}`)
 
-		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, 201, w.Code)
 
 		var message *model.Message
 		res := db.Db.Table("messages").Take(&message)

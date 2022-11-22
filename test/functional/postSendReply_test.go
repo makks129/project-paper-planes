@@ -39,9 +39,9 @@ func Test_PostSendReply(t *testing.T) {
 		msg := CreateMessage(ALICE_ID, &_BOB_ID, false)
 
 		json := fmt.Sprintf(`{"message_id": %d, "message_user_id": "%s", "text": "Thank you for this message stranger."}`, msg.ID, msg.UserId)
-		w := SendSendReplyRequest(app, BOB_ID, json)
+		res := SendSendReplyRequest(app, BOB_ID, json)
 
-		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, 201, res.Code)
 
 		var reply *model.Reply
 		replyRes := db.Db.Table("replies").Take(&reply)
