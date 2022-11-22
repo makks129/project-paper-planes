@@ -19,7 +19,7 @@ func GetMessageOnStart(tx *gorm.DB, userId string) (*model.Message, error) {
 		return nil, err1
 	}
 
-	latestMessage, err2 := repo.GetLatestUnassignedMessage(tx)
+	latestMessage, err2 := repo.GetLatestUnassignedMessage(tx, userId)
 
 	if latestMessage != nil {
 

@@ -27,9 +27,13 @@ func GetAssignedUnreadMessage(tx *gorm.DB, userId string) (*model.Message, error
 	}
 }
 
-func GetLatestUnassignedMessage(tx *gorm.DB) (*model.Message, error) {
+func GetLatestUnassignedMessage(tx *gorm.DB, userId string) (*model.Message, error) {
 	var message *model.Message
-	res := tx.Table("messages").Where("assigned_to_user_id IS NULL").Order("created_at DESC").Take(&message)
+	res := tx.Table("messages").
+		Where("user_id != ?", userId).
+		Where("assigned_to_user_id IS NULL").
+		Order("created_at DESC").
+		Take(&message)
 
 	log.Println("GetLatestUnassignedMessage", "\n| message: ", message, "\n| ERROR: ", res.Error, "\n ")
 
