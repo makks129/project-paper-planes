@@ -33,7 +33,7 @@ func CreateMessage(userId string, assignedToUserId *string, isRead bool) model.M
 	createMsg := &model.Message{
 		UserId:     userId,
 		Text:       "Lorem ipsum",
-		AssignedAt: sql.NullTime{Time: time.Now(), Valid: true},
+		AssignedAt: sql.NullTime{Time: time.Now().UTC(), Valid: true},
 		IsRead:     isRead,
 	}
 	if assignedToUserId != nil {
@@ -56,7 +56,7 @@ func CreateReply(userId string, messageId uint, assignedToUserId string, isRead 
 		MessageId:        messageId,
 		Text:             "Reply to Lorem ipsum",
 		AssignedToUserId: sql.NullString{String: assignedToUserId, Valid: true},
-		AssignedAt:       sql.NullTime{Time: time.Now(), Valid: true},
+		AssignedAt:       sql.NullTime{Time: time.Now().UTC(), Valid: true},
 		IsRead:           isRead,
 	}
 
