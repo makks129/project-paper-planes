@@ -23,7 +23,7 @@ func Test_PostSendReply(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Message{}, model.Reply{})
+		deleteTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{

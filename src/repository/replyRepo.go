@@ -2,12 +2,12 @@ package repositories
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/makks129/project-paper-planes/src/db"
 	"github.com/makks129/project-paper-planes/src/err"
 	"github.com/makks129/project-paper-planes/src/model"
+	"github.com/makks129/project-paper-planes/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +19,7 @@ func GetUnreadReplies(tx *gorm.DB, userId string) ([]*model.Reply, error) {
 		Where("r.assigned_to_user_id = ? AND r.is_read = ?", userId, false).
 		Find(&replies)
 
-	log.Println("GetUnreadReplies", "\n| replies: ", replies, "\n| ERROR: ", res.Error, "\n ")
+	utils.Log("GetUnreadReplies", "\n| replies: ", replies, "\n| ERROR: ", res.Error, "\n ")
 
 	switch {
 	case len(replies) == 0:
@@ -37,11 +37,11 @@ func SaveReply(tx *gorm.DB, userId string, messageId uint, messageUserId string,
 		MessageId:        messageId,
 		Text:             text,
 		AssignedToUserId: sql.NullString{String: messageUserId, Valid: true},
-		AssignedAt:       sql.NullTime{Time: time.Now(), Valid: true},
+		AssignedAt:       sql.NullTime{Time: time.Now().UTC(), Valid: true},
 		IsRead:           false,
 	})
 
-	log.Println("SaveReply", "\n| ERROR: ", res.Error, "\n ")
+	utils.Log("SaveReply", "\n| ERROR: ", res.Error, "\n ")
 
 	return res.Error
 }
@@ -50,7 +50,7 @@ func AckReply(userId string, replyId uint) error {
 	updates := model.Reply{IsRead: true}
 	res := db.Db.Table("replies").Where("id = ? AND assigned_to_user_id = ?", replyId, userId).Updates(updates)
 
-	log.Println("AckReply", "\n| ERROR: ", res.Error, "\n ")
+	utils.Log("AckReply", "\n| ERROR: ", res.Error, "\n ")
 
 	return res.Error
 }

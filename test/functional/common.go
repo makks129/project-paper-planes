@@ -23,8 +23,7 @@ func InitApp() *gin.Engine {
 	return app
 }
 
-// https://xkcd.com/327/
-func bobbyDropTables(models ...interface{}) {
+func deleteTables(models ...interface{}) {
 	for _, m := range models {
 		db.Db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(m)
 	}

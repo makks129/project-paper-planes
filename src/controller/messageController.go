@@ -59,3 +59,7 @@ func SaveMessage(userId string, text string) error {
 func AckMessage(userId string, messageId uint) error {
 	return repo.AckMessage(db.Db, userId, messageId)
 }
+
+func UnassignOldAssignedUnreadMessage() (int64, error) {
+	return repo.UnassignOldAssignedUnreadMessage()
+}

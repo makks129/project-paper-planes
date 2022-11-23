@@ -20,7 +20,7 @@ func Test_ReadOnlyOneMessagePerDay(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Message{}, model.Reply{})
+		deleteTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{
@@ -112,7 +112,7 @@ func Test_ReadOnlyOneMessagePerDay(t *testing.T) {
 		assert.Equal(t, 201, sendMessageRes2.Code)
 
 		// Find and modify Bob's message
-		yesterday := time.Now().AddDate(0, 0, -1)
+		yesterday := time.Now().UTC().AddDate(0, 0, -1)
 		updateRes := db.Db.Table("messages").
 			Where("user_id = ?", BOB_ID).
 			Updates(model.Message{

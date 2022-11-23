@@ -38,7 +38,7 @@ func Test_PostStart_Replies(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Message{}, model.Reply{})
+		deleteTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{
@@ -109,7 +109,7 @@ func Test_PostStart_Message(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Message{}, model.Reply{})
+		deleteTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{

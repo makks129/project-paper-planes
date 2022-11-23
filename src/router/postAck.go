@@ -1,12 +1,12 @@
 package router
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/makks129/project-paper-planes/src/controller"
 	"github.com/makks129/project-paper-planes/src/err"
+	"github.com/makks129/project-paper-planes/src/utils"
 )
 
 type AckBody struct {
@@ -28,7 +28,7 @@ func Ack(c *gin.Context) {
 		error = controller.AckReply(userId, body.Id)
 	}
 
-	log.Println("ack", "\n| ERROR: ", error, "\n ")
+	utils.Log("ack", "\n| ERROR: ", error, "\n ")
 
 	if error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.GenericServerError{}.Error()})

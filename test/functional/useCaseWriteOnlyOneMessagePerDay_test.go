@@ -18,7 +18,7 @@ func Test_WriteOnlyOneMessagePerDay(t *testing.T) {
 	db.RunDbMigrations()
 
 	cleanupDb := func() {
-		bobbyDropTables(model.Message{}, model.Reply{})
+		deleteTables(model.Message{}, model.Reply{})
 	}
 
 	s := suit.Of(&suit.SubTests{
@@ -51,7 +51,7 @@ func Test_WriteOnlyOneMessagePerDay(t *testing.T) {
 		assert.Equal(t, 201, sendMessageRes.Code)
 
 		// Find and modify Alice's message
-		yesterday := time.Now().AddDate(0, 0, -1)
+		yesterday := time.Now().UTC().AddDate(0, 0, -1)
 		updateRes := db.Db.Table("messages").
 			Where("user_id = ?", ALICE_ID).
 			Updates(model.Message{
